@@ -11,15 +11,13 @@ impl Plugin for CamPlugin {
 
 fn setup_cam_light(mut cmds: Commands) {
     cmds.spawn((
-            DirectionalLight::default(),
-            Transform::from_xyz(10., 10., 10.).looking_at(Vec3::ONE, Vec3::Y),
+        DirectionalLight::default(),
+        Transform::from_xyz(10., 10., 10.).looking_at(Vec3::ONE, Vec3::Y),
     ));
 
     cmds.spawn((
-            Camera3d::default(),
-            Transform::from_xyz(0., 10., 0.).looking_at(vec3(1.,0.,0.), Vec3::Y),
-            FreeCamera {
-                ..default()
-            },
+        Camera3d::default(),
+        Transform::from_xyz(0., 10., 0.).looking_at(vec3(1., 0., 0.), Vec3::Y),
+        FreeCamera { ..default() },
     ));
 }
