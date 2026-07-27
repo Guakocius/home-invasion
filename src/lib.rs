@@ -14,7 +14,7 @@
 //!     App::new()
 //!         .add_plugins((
 //!             (
-//!                 (DefaultPlugins, FreeCameraPlugin),
+//!                 (MinimalPlugins, FreeCameraPlugin),
 //!                 (CamPlugin, HousePlugin)
 //!             )
 //!         ));
