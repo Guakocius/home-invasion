@@ -60,6 +60,7 @@ pub struct Player {
 
 impl Player {
     #[must_use]
+    ///
     pub fn new(
         radius: f32,
         length: f32,
