@@ -31,7 +31,7 @@ pub struct Player {
 }
 
 impl Player {
-    fn new(
+    pub fn new(
         radius: f32,
         length: f32,
         speed: PlayerSpeed,
