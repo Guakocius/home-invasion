@@ -19,14 +19,42 @@ pub struct PlayerSpeed(
 use bevy::prelude::*;
 use bevy_camera_controller::free_camera::FreeCamera;
 
+/// The Player [`Component`].
+///
+/// # Examples
+///
+/// ```
+/// use bevy::prelude::*;
+/// use bevy_camera_controller::free_camera::FreeCamera;
+/// use home_invasion::components::player::{Player, PlayerSpeed};
+///
+/// let camera = Some(FreeCamera { ..default() });
+/// let speed = PlayerSpeed(100.0);
+/// let player = Player::new(1.0, 1.0, speed, camera, None);
+///
+/// assert!(!player.is_dead);
+/// assert_eq!(player.radius, 1.0);
+/// assert_eq!(player.length, 1.0);
+/// assert_eq!(player.pos, Vec3::ZERO);
+/// assert!(player.free_camera.is_some());
+/// assert!(player.camera.is_none());
+/// ```
 #[derive(Component)]
 pub struct Player {
+    /// True if the player is dead, false otherwise.
     pub is_dead: bool,
+    /// The Player's radius.
     pub radius: f32,
+    /// The Player's length.
     pub length: f32,
+    /// The Player's position on the World map.
     pub pos: Vec3,
+    /// The Player's speed.
     pub speed: PlayerSpeed,
+    /// Option for a [`FreeCamera`] (used for debugging).
     pub free_camera: Option<FreeCamera>,
+    /// Option for a normal [`Camera`] (used in production or to see the World from the eyes of the
+    /// Player)
     pub camera: Option<Camera>,
 }
 
