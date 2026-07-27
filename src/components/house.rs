@@ -52,3 +52,6 @@ fn setup_floor(
             .insert(Transform::from_xyz(0., 0., 0.));
     });
 }
+
+#[cfg(test)]
+mod tests {}

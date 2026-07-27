@@ -16,3 +16,6 @@ pub enum Rooms {
     Storage2(bool),
     Toilet(bool),
 }
+
+#[cfg(test)]
+mod tests {}

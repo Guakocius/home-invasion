@@ -21,3 +21,6 @@ fn setup_cam_light(mut cmds: Commands) {
         FreeCamera { ..default() },
     ));
 }
+
+#[cfg(test)]
+mod tests {}

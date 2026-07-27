@@ -94,3 +94,6 @@ impl Plugin for PlayerPlugin {
         app.add_systems(Startup, setup);
     }
 }
+
+#[cfg(test)]
+mod tests {}
