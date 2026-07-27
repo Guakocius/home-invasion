@@ -43,10 +43,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh pr create \
-            --base main \
-            --head dev \
-            --title "ci: merge dev into main" \
-            --body "Automated PR created by GitHub Actions after passing checks." || true
-
-          gh pr merge dev --merge --admin
+          git fetch origin main
+          git checkout dev
+          git merge origin/main --ff-only
+          git push origin dev
