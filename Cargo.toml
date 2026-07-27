@@ -2,6 +2,7 @@
 name = "home_invasion"
 version = "0.1.0"
 edition = "2024"
+
 [dependencies]
 bevy = { version = "0.19.0", default-features = false, features = [
   "default_app",
@@ -39,6 +40,21 @@ bevy_camera_controller = { version = "0.19.0", default-features = false, feature
   "free_camera",
 ] }
 bevy_rapier3d = { version = "0.35.0", default-features = false, features = [
-  "debug-render-3d",
   "dim3",
 ] }
+
+[profile.dev]
+debug = 0
+strip = "symbols"
+
+[profile.dev.package."*"]
+opt-level = 3
+
+[profile.release]
+codegen-units = 1
+lto = "thin"
+
+[profile.wasm-release]
+inherits = "release"
+opt-level = "s"
+strip = "debuginfo"
