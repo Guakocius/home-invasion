@@ -42,6 +42,7 @@ bevy_camera_controller = { version = "0.19.0", default-features = false, feature
 bevy_rapier3d = { version = "0.35.0", default-features = false, features = [
   "dim3",
 ] }
+rapier3d = "0.34.0"
 
 [profile.dev]
 debug = 0
