@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_camera_controller::free_camera::FreeCamera;
 
+///
 pub struct CamPlugin;
 
 impl Plugin for CamPlugin {
