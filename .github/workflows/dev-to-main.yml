@@ -49,4 +49,4 @@ jobs:
             --title "ci: merge dev into main" \
             --body "Automated PR created by GitHub Actions after passing checks." || true
 
-            gh pr merge dev --merge --admin
+            gh pr merge dev --auto --merge
