@@ -1,9 +1,13 @@
+//!
+
 use bevy::{
     image::{ImageAddressMode, ImageLoaderSettings, ImageSampler, ImageSamplerDescriptor},
     math::Affine2,
     prelude::*,
 };
 use bevy_rapier3d::prelude::Collider;
+
+///
 pub struct HousePlugin;
 
 impl Plugin for HousePlugin {
