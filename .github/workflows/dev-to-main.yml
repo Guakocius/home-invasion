@@ -1,4 +1,4 @@
-name: Test and Auto-Merge Dev to Main
+name: CI and Auto-Merge to Main
 
 on:
   push:
@@ -28,25 +28,25 @@ jobs:
       - name: Run Tests
         run: cargo test
 
-  merge-to-main:
+  create-and-merge-pr:
     needs: test-and-clippy
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Configure Git user
+      - name: Create PR and Enable Auto-Merge
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          gh pr create \
+            --base main \
+            --head dev \
+            --title "ci: merge dev into main" \
+            --body "Automated PR created by GitHub Actions after passing checks." || true
 
-      - name: Merge dev into main
-        run: |
-          git checkout main
-          git merge origin/dev --no-ff -m "ci: auto-merge dev into main after passing checks"
-          git push origin main
+          gh pr merge dev --auto --merge
