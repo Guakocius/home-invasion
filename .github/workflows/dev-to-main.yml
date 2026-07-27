@@ -1,0 +1,52 @@
+name: CI and Auto-Merge to Main
+
+on:
+  push:
+    branches: [ "dev" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test-and-clippy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain with Clippy
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Cache Cargo dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Run Clippy
+        run: cargo clippy -- -D warnings
+
+      - name: Run Tests
+        run: cargo test
+
+  create-and-merge-pr:
+    needs: test-and-clippy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create PR and Enable Auto-Merge
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create \
+            --base main \
+            --head dev \
+            --title "ci: merge dev into main" \
+            --body "Automated PR created by GitHub Actions after passing checks." || true
+
+          gh pr merge dev --auto --merge

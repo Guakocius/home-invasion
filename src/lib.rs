@@ -14,7 +14,7 @@
 //!     App::new()
 //!         .add_plugins((
 //!             (
-//!                 (DefaultPlugins, FreeCameraPlugin),
+//!                 (MinimalPlugins, FreeCameraPlugin),
 //!                 (CamPlugin, HousePlugin)
 //!             )
 //!         ));
@@ -23,6 +23,11 @@
 //!
 #![warn(missing_docs)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
+#![warn(clippy::pedantic)]
+#![allow(clippy::needless_pass_by_value)]
+#![allow(clippy::empty_docs)]
+#![allow(unused_imports)]
+///
 pub mod components {
     pub mod cam;
     pub mod house;
