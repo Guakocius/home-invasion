@@ -119,7 +119,7 @@ fn setup(
     commands.insert_resource(player_speed);
 }
 
-/// The Plugin for the [Players](home_invasion::components::player::Player) core functionalities.
+/// The Plugin for the [Player's](Player) core functionalities.
 ///
 /// # Examples
 ///
