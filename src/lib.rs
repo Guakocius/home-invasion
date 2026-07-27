@@ -23,6 +23,7 @@
 //!
 #![warn(missing_docs)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
+#![allow(unused_imports)]
 pub mod components {
     pub mod cam;
     pub mod house;
