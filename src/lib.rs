@@ -27,6 +27,7 @@
 #![allow(clippy::needless_pass_by_value)]
 #![allow(clippy::empty_docs)]
 #![allow(unused_imports)]
+///
 pub mod components {
     pub mod cam;
     pub mod house;
