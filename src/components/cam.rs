@@ -1,9 +1,18 @@
-//!
+//! This module defines the core functionality of the Camera used by the Player.
 
 use bevy::prelude::*;
 use bevy_camera_controller::free_camera::FreeCamera;
 
+/// Plugin for adding the camera's related systems.
 ///
+/// # Examples
+///
+/// ```
+/// use bevy::prelude::*;
+/// use home_invasion::components::cam::CamPlugin;
+///
+/// App::new().add_plugins((MinimalPlugins, CamPlugin)).update();
+/// ```
 pub struct CamPlugin;
 
 impl Plugin for CamPlugin {

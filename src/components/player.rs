@@ -54,13 +54,30 @@ pub struct Player {
     /// Option for a [`FreeCamera`] (used for debugging).
     pub free_camera: Option<FreeCamera>,
     /// Option for a normal [`Camera`] (used in production or to see the World from the eyes of the
-    /// Player)
+    /// Player).
     pub camera: Option<Camera>,
 }
 
 impl Player {
     #[must_use]
+    /// Creates a new Player with given radius, length, [`PlayerSpeed`], either [`FreeCamera`] or [`Camera`] (the other is [`None`]) and some default values.
     ///
+    /// # Examples
+    ///
+    /// ```
+    /// use bevy::prelude::*;
+    /// use bevy_camera_controller::free_camera::FreeCamera;
+    /// use home_invasion::components::player::{Player, PlayerSpeed};
+    ///
+    /// let player = Player::new(1.0, 1.0, PlayerSpeed(100.0), Some(FreeCamera { ..default() }), None);
+    ///
+    /// assert!(!player.is_dead);
+    /// assert_eq!(player.radius, 1.0);
+    /// assert_eq!(player.length, 1.0);
+    /// assert_eq!(player.pos, Vec3::ZERO);
+    /// assert!(player.free_camera.is_some());
+    /// assert!(player.camera.is_none());
+    /// ```
     pub fn new(
         radius: f32,
         length: f32,
@@ -126,4 +143,20 @@ impl Plugin for PlayerPlugin {
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_player_fields() {
+        const ERROR_MARGIN: f32 = 0.1;
+        let speed = PlayerSpeed(100.0);
+        let camera = Some(Camera::default());
+        let player = Player::new(1.0, 1.0, speed, None, camera);
+        assert!(!player.is_dead);
+        assert!((player.radius - 1.0).abs() < ERROR_MARGIN);
+        assert!((player.length - 1.0).abs() < ERROR_MARGIN);
+        assert_eq!(player.pos, Vec3::ZERO);
+        assert!(player.free_camera.is_none());
+        assert!(player.camera.is_some());
+    }
+}

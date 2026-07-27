@@ -1,4 +1,4 @@
-//!
+//! This module defines the structure and the logic of the house.
 
 use bevy::{
     image::{ImageAddressMode, ImageLoaderSettings, ImageSampler, ImageSamplerDescriptor},
@@ -7,7 +7,23 @@ use bevy::{
 };
 use bevy_rapier3d::prelude::Collider;
 
+/// Plugin for the house's systems.
 ///
+/// # Examples
+///
+/// ```
+/// use bevy::prelude::*;
+/// use bevy::asset::AssetPlugin;
+/// use bevy::image::Image;
+/// use home_invasion::components::house::HousePlugin;
+///
+/// App::new()
+///     .add_plugins((MinimalPlugins, AssetPlugin::default(), HousePlugin))
+///     .init_asset::<Mesh>()
+///     .init_asset::<StandardMaterial>()
+///     .init_asset::<Image>()
+///     .update()
+/// ```
 pub struct HousePlugin;
 
 impl Plugin for HousePlugin {
