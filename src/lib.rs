@@ -1,7 +1,7 @@
 //! # Home Invasion
 //!
 //! A 3D horror game using the Bevy engine in collaboration with
-//! [SQUA7426](https://github.com/SQUA7426)
+//! [SQUA7426](https://github.com/SQUA7426).
 //!
 //! ## Examples
 //!
