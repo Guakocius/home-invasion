@@ -146,9 +146,10 @@ impl Plugin for PlayerPlugin {
 mod tests {
     use super::*;
 
+    const ERROR_MARGIN: f32 = 0.1;
+
     #[test]
     fn test_player_fields() {
-        const ERROR_MARGIN: f32 = 0.1;
         let speed = PlayerSpeed(100.0);
         let camera = Some(Camera::default());
         let player = Player::new(1.0, 1.0, speed, None, camera);
@@ -158,5 +159,44 @@ mod tests {
         assert_eq!(player.pos, Vec3::ZERO);
         assert!(player.free_camera.is_none());
         assert!(player.camera.is_some());
+    }
+
+    #[test]
+    fn test_player_setup() {
+        let mut app = App::new();
+        app.add_plugins((MinimalPlugins, AssetPlugin::default()))
+            .init_asset::<Mesh>()
+            .init_asset::<StandardMaterial>()
+            .add_systems(Startup, setup)
+            .update();
+
+        let player_speed = app.world().get_resource::<PlayerSpeed>();
+        assert!(player_speed.is_some(), "PlayerSpeed resource should exist");
+        assert!((player_speed.unwrap().0 - 100.0).abs() < ERROR_MARGIN);
+
+        let mut query = app.world_mut().query::<(
+            &Player,
+            &Mesh3d,
+            &MeshMaterial3d<StandardMaterial>,
+            &Transform,
+        )>();
+
+        let (player, _mesh, _material, transform) = query
+            .single(app.world())
+            .expect("A single Player entity should have spawned");
+
+        assert!((player.radius - 0.5).abs() < ERROR_MARGIN);
+        assert!((player.length - 1.0).abs() < ERROR_MARGIN);
+        assert_eq!(transform.translation, player.pos);
+    }
+
+    #[test]
+    fn test_player_plugin_build() {
+        let mut app = App::new();
+        app.add_plugins((MinimalPlugins, AssetPlugin::default(), PlayerPlugin))
+            .init_asset::<Mesh>()
+            .init_asset::<StandardMaterial>()
+            .update();
+        assert!(app.is_plugin_added::<PlayerPlugin>());
     }
 }
