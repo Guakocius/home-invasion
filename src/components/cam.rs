@@ -35,4 +35,14 @@ fn setup_cam_light(mut cmds: Commands) {
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_cam_plugin_build() {
+        let mut app = App::new();
+        app.add_plugins((MinimalPlugins, CamPlugin)).update();
+
+        assert!(app.is_plugin_added::<CamPlugin>());
+    }
+}

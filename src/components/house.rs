@@ -32,6 +32,17 @@ impl Plugin for HousePlugin {
     }
 }
 
+fn configure_floor_texture_settings(s: &mut ImageLoaderSettings) {
+    *s = ImageLoaderSettings {
+        sampler: ImageSampler::Descriptor(ImageSamplerDescriptor {
+            address_mode_u: ImageAddressMode::Repeat,
+            address_mode_v: ImageAddressMode::Repeat,
+            ..default()
+        }),
+        ..default()
+    };
+}
+
 fn setup_floor(
     mut cmds: Commands,
     asset_server: Res<AssetServer>,
@@ -39,39 +50,62 @@ fn setup_floor(
     mut standard_materials: ResMut<Assets<StandardMaterial>>,
 ) {
     cmds.spawn((
-        Mesh3d(meshes.add(Plane3d::new(Vec3::new(0., 10., 0.), Vec2::splat(2.)))),
+        Mesh3d(meshes.add(Plane3d::new(Vec3::new(0.0, 10.0, 0.0), Vec2::splat(2.0)))),
         MeshMaterial3d(
             standard_materials.add(StandardMaterial {
                 base_color: Color::from(bevy::color::palettes::css::WHITE),
                 base_color_texture: Some(
                     asset_server
                         .load_builder()
-                        .with_settings(|s: &mut _| {
-                            *s = ImageLoaderSettings {
-                                sampler: ImageSampler::Descriptor(ImageSamplerDescriptor {
-                                    address_mode_u: ImageAddressMode::Repeat,
-                                    address_mode_v: ImageAddressMode::Repeat,
-                                    ..default()
-                                }),
-                                ..default()
-                            }
-                        })
+                        .with_settings(configure_floor_texture_settings)
                         .load("textures/wooden_plank_floor.png"),
                 ),
-                uv_transform: Affine2::from_scale(vec2(10., 10.)),
+                uv_transform: Affine2::from_scale(vec2(10.0, 10.0)),
                 perceptual_roughness: 0.8,
                 ..default()
             }),
         ),
-        Transform::from_scale(Vec3::splat(10.)),
+        Transform::from_scale(Vec3::splat(10.0)),
         Visibility::Visible,
     ))
     .with_children(|children| {
         children
-            .spawn(Collider::cuboid(1., 0., 1.))
-            .insert(Transform::from_xyz(0., 0., 0.));
+            .spawn(Collider::cuboid(1.0, 0.0, 1.0))
+            .insert(Transform::from_xyz(0.0, 0.0, 0.0));
     });
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_house_plugin_build() {
+        let mut app = App::new();
+
+        app.add_plugins((MinimalPlugins, AssetPlugin::default(), HousePlugin))
+            .init_asset::<Mesh>()
+            .init_asset::<StandardMaterial>()
+            .init_asset::<Image>()
+            .update();
+
+        assert!(app.is_plugin_added::<AssetPlugin>());
+        assert!(app.is_plugin_added::<HousePlugin>());
+    }
+
+    #[test]
+    fn test_configure_floor_texture_settings() {
+        let mut settings = ImageLoaderSettings::default();
+
+        configure_floor_texture_settings(&mut settings);
+
+        assert!(matches!(
+            settings.sampler,
+            ImageSampler::Descriptor(ImageSamplerDescriptor {
+                address_mode_u: ImageAddressMode::Repeat,
+                address_mode_v: ImageAddressMode::Repeat,
+                ..
+            })
+        ));
+    }
+}

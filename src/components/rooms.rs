@@ -66,4 +66,23 @@ impl fmt::Display for Rooms {
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_rooms_fmt() {
+        assert_eq!(format!("{}", Rooms::Basement(true)), "Basement");
+        assert_eq!(format!("{}", Rooms::Bathroom(true)), "Bathroom");
+        assert_eq!(format!("{}", Rooms::Bedroom(true)), "Bedroom");
+        assert_eq!(format!("{}", Rooms::Hallway(true)), "Hallway");
+        assert_eq!(format!("{}", Rooms::HomeOffice(true)), "Home Office");
+        assert_eq!(format!("{}", Rooms::KidsRoom(true)), "Kid's Room");
+        assert_eq!(format!("{}", Rooms::Kitchen(true)), "Kitchen");
+        assert_eq!(format!("{}", Rooms::LivingRoom(true)), "Living Room");
+        assert_eq!(format!("{}", Rooms::Office(true)), "Office");
+        assert_eq!(format!("{}", Rooms::Shower(true)), "Shower");
+        assert_eq!(format!("{}", Rooms::Storage1(true)), "Storage 1");
+        assert_eq!(format!("{}", Rooms::Storage2(true)), "Storage 2");
+        assert_eq!(format!("{}", Rooms::Toilet(true)), "Toilet");
+    }
+}
