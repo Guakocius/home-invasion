@@ -200,7 +200,9 @@ impl Plugin for RoomsPlugin {
     }
 }
 
-fn generate_rooms(mut commands: Commands) {}
+fn generate_rooms(_commands: Commands) {
+    let _wall = Wall::new(50.0, 2.0, Vec3::ZERO, "todo.jpg".into());
+}
 
 #[cfg(test)]
 mod tests {
