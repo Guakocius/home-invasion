@@ -1,5 +1,6 @@
 //! This module defines the room layout and the logic of each of the house's rooms.
 
+use bevy::prelude::*;
 use bevy::prelude::{Component, States};
 use std::fmt;
 
@@ -44,6 +45,122 @@ pub enum Rooms {
     Toilet(bool),
 }
 
+/// This structure defines the walls of each [`Room`].
+///
+/// # Examples
+///
+/// ```
+/// use bevy::prelude::*;
+/// use home_invasion::components::rooms::Wall;
+///
+/// const ERROR_MARGIN: f32 = 0.1;
+///
+/// let wall = Wall { height: 10.0, width: 5.0, depth: 2.0, pos: Vec3::ZERO, texture: "/assets/textures/test.jpg".into()};
+///
+/// assert!((wall.height - 10.0).abs() < ERROR_MARGIN);
+/// assert!((wall.width - 5.0).abs() < ERROR_MARGIN);
+/// assert!((wall.depth - 2.0).abs() < ERROR_MARGIN);
+/// assert_eq!(wall.pos, Vec3::ZERO);
+/// assert_eq!(wall.texture, String::from("/assets/textures/test.jpg"));
+/// ```
+#[derive(Component)]
+pub struct Wall {
+    /// The wall's height.
+    pub height: f32,
+    /// The wall's width.
+    pub width: f32,
+    /// The wall's depth.
+    pub depth: f32,
+    /// The wall's 3-dimensional position in the [`World`].
+    pub pos: Vec3,
+    /// The wall's texture file path.
+    pub texture: String,
+}
+
+const WALL_HEIGHT: f32 = 30.0;
+
+impl Wall {
+    #[must_use]
+    fn new(width: f32, depth: f32, pos: Vec3, texture: String) -> Self {
+        Self {
+            height: WALL_HEIGHT,
+            width,
+            depth,
+            pos,
+            texture,
+        }
+    }
+}
+
+/// This structure defines the doors of each [`Room`].
+///
+/// # Examples
+///
+/// ```
+/// use bevy::prelude::*;
+/// use home_invasion::components::rooms::Door;
+///
+/// const ERROR_MARGIN: f32 = 0.1;
+///
+/// let door = Door { height: 5.0, width: 2.0, depth: 1.0, pos: Vec3::ZERO, texture: "/assets/textures/test.jpg".into()};
+///
+/// assert!((door.height - 5.0).abs() < ERROR_MARGIN);
+/// assert!((door.width - 2.0).abs() < ERROR_MARGIN);
+/// assert!((door.depth - 1.0).abs() < ERROR_MARGIN);
+/// assert_eq!(door.pos, Vec3::ZERO);
+/// assert_eq!(door.texture, String::from("/assets/textures/test.jpg"));
+/// ```
+#[derive(Component)]
+pub struct Door {
+    /// The door's height.
+    pub height: f32,
+    /// The door's width.
+    pub width: f32,
+    /// The door's depth.
+    pub depth: f32,
+    /// The door's 3-dimensional position in the [`World`].
+    pub pos: Vec3,
+    /// The door's texture file path.
+    pub texture: String,
+}
+
+/// This structure defines each `Room` and its contents.
+///
+/// # Examples
+///
+/// ```
+/// use bevy::prelude::*;
+/// use home_invasion::components::rooms::{Door, Room, Rooms, Wall};
+///
+/// let mut walls: Vec<Wall> = Vec::new();
+/// const WALL_HEIGHT: f32 = 30.0;
+/// walls.push(Wall { height: WALL_HEIGHT, width: 50.0, depth: 5.0, pos: Vec3::new(30.0, 50.0, 5.0), texture: "/assets/textures/test_wall1.jgp".into() });
+/// walls.push(Wall { height: WALL_HEIGHT, width: 50.0, depth: 5.0, pos: Vec3::new(60.0, 100.0, 10.0), texture: "/assets/textures/test_wall2.jgp".into() });
+/// walls.push(Wall { height: WALL_HEIGHT, width: 50.0, depth: 5.0, pos: Vec3::new(90.0, 150.0, 15.0), texture: "/assets/textures/test_wall3.jgp".into() });
+/// walls.push(Wall { height: WALL_HEIGHT, width: 50.0, depth: 5.0, pos: Vec3::new(120.0, 200.0, 20.0), texture: "/assets/textures/test_wall4.jgp".into() });
+///
+/// let room = Room {
+///     room: Rooms::Basement(true),
+///     walls,
+///     door: Door { height: 10.0, width: 5.0, depth: 1.0, pos: Vec3::ZERO, texture: "/assets/textures/test_door.jpg".into() },
+///     pos: Vec3::ZERO,
+///     texture: "/assets/textures/test_room.jpg".into(),
+/// };
+/// ```
+#[derive(Component)]
+pub struct Room {
+    /// The type of Room and if the player is currently inside it.
+    pub room: Rooms,
+    /// The Room's [Walls](Wall).
+    pub walls: Vec<Wall>,
+    /// The Room's [Door].
+    pub door: Door,
+    /// The Room's 3-dimensional position in the [`World`].
+    pub pos: Vec3,
+    /// The Room's texture file path.
+    pub texture: String,
+}
+
 impl fmt::Display for Rooms {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let name = match self {
@@ -63,6 +180,28 @@ impl fmt::Display for Rooms {
         };
         write!(f, "{name}")
     }
+}
+
+/// Plugin for all systems associated with the [`Rooms`].
+///
+/// # Examples
+///
+/// ```
+/// use bevy::prelude::*;
+/// use home_invasion::components::rooms::RoomsPlugin;
+///
+/// App::new().add_plugins((MinimalPlugins, RoomsPlugin)).update();
+/// ```
+pub struct RoomsPlugin;
+
+impl Plugin for RoomsPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(Startup, generate_rooms);
+    }
+}
+
+fn generate_rooms(_commands: Commands) {
+    let _wall = Wall::new(50.0, 2.0, Vec3::ZERO, "todo.jpg".into());
 }
 
 #[cfg(test)]
