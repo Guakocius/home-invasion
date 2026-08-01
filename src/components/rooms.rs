@@ -134,10 +134,10 @@ pub struct Door {
 ///
 /// let mut walls: Vec<Wall> = Vec::new();
 /// const WALL_HEIGHT: f32 = 30.0;
-/// walls.push(Wall { height: WALL_HEIGHT, width: 50.0, depth: 5.0, pos: Vec3::new(30.0, 50.0, 5.0), texture: "/assets/textures/test_wall1.jgp".into() });
-/// walls.push(Wall { height: WALL_HEIGHT, width: 50.0, depth: 5.0, pos: Vec3::new(60.0, 100.0, 10.0), texture: "/assets/textures/test_wall2.jgp".into() });
-/// walls.push(Wall { height: WALL_HEIGHT, width: 50.0, depth: 5.0, pos: Vec3::new(90.0, 150.0, 15.0), texture: "/assets/textures/test_wall3.jgp".into() });
-/// walls.push(Wall { height: WALL_HEIGHT, width: 50.0, depth: 5.0, pos: Vec3::new(120.0, 200.0, 20.0), texture: "/assets/textures/test_wall4.jgp".into() });
+/// walls.push(Wall { height: WALL_HEIGHT, width: 50.0, depth: 5.0, pos: Vec3::new(30.0, 50.0, 5.0), texture: "/assets/textures/test_wall1.jpg".into() });
+/// walls.push(Wall { height: WALL_HEIGHT, width: 50.0, depth: 5.0, pos: Vec3::new(60.0, 100.0, 10.0), texture: "/assets/textures/test_wall2.jpg".into() });
+/// walls.push(Wall { height: WALL_HEIGHT, width: 50.0, depth: 5.0, pos: Vec3::new(90.0, 150.0, 15.0), texture: "/assets/textures/test_wall3.jpg".into() });
+/// walls.push(Wall { height: WALL_HEIGHT, width: 50.0, depth: 5.0, pos: Vec3::new(120.0, 200.0, 20.0), texture: "/assets/textures/test_wall4.jpg".into() });
 ///
 /// let room = Room {
 ///     room: Rooms::Basement(true),
@@ -208,6 +208,8 @@ fn generate_rooms(_commands: Commands) {
 mod tests {
     use super::*;
 
+    const ERROR_MARGIN: f32 = 0.1;
+
     #[test]
     fn test_rooms_fmt() {
         assert_eq!(format!("{}", Rooms::Basement(true)), "Basement");
@@ -223,5 +225,28 @@ mod tests {
         assert_eq!(format!("{}", Rooms::Storage1(true)), "Storage 1");
         assert_eq!(format!("{}", Rooms::Storage2(true)), "Storage 2");
         assert_eq!(format!("{}", Rooms::Toilet(true)), "Toilet");
+    }
+
+    #[test]
+    fn test_wall_generation() {
+        let wall = Wall::new(
+            10.0,
+            2.0,
+            Vec3::ZERO,
+            "/assets/textures/test_wall1.jpg".into(),
+        );
+
+        assert!((wall.height - WALL_HEIGHT) < ERROR_MARGIN);
+        assert!((wall.width - 10.0) < ERROR_MARGIN);
+        assert!((wall.depth - 2.0) < ERROR_MARGIN);
+        assert_eq!(wall.pos, Vec3::ZERO);
+    }
+
+    #[test]
+    fn test_rooms_plugin_build() {
+        let mut app = App::new();
+        app.add_plugins((MinimalPlugins, RoomsPlugin));
+        app.update();
+        assert!(app.is_plugin_added::<RoomsPlugin>());
     }
 }
