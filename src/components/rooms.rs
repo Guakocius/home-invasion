@@ -205,13 +205,15 @@ fn generate_rooms(_commands: Commands) {
     let _wall = Wall::new(50.0, 2.0, Vec3::ZERO, "todo.jpg".into());
 }
 
+///
 pub mod office {
-    use crate::Rooms;
+    use super::Rooms;
     use bevy::{
         gltf::{GltfExtras, GltfMaterialExtras, GltfMeshExtras, GltfSceneExtras},
         prelude::*,
     };
 
+    ///
     pub struct OfficePlugin;
 
     impl Plugin for OfficePlugin {
@@ -230,7 +232,7 @@ pub mod office {
             String::from("Wall_office_door"),
         ];
 
-        let walls = vec![1, 0, 0, 0, 1, 0, 1, 3, 0, 0, 1, 3]
+        let walls = [1, 0, 0, 0, 1, 0, 1, 3, 0, 0, 1, 3]
             .iter()
             .map(|i| assets[*i].clone())
             .collect::<Vec<String>>();
@@ -244,31 +246,24 @@ pub mod office {
                 Transform::from_translation(Vec3::new(curr_pos[0], curr_pos[1], curr_pos[2]));
 
             match idx {
-                0 => {
+                0 | 11 => {
                     transform = transform.looking_at(vec3(10.0, 0.0, 0.0), Vec3::Y);
                 }
-                1 | 2 | 3 => {
-                    transform = transform.looking_at(vec3(curr_pos[0].clone(), 0.0, 10.0), Vec3::Y);
+                1..=3 => {
+                    transform = transform.looking_at(vec3(curr_pos[0], 0.0, 10.0), Vec3::Y);
                 }
                 4 => {
-                    transform = transform.looking_at(
-                        vec3(curr_pos[0].clone(), 0.0, curr_pos[2].clone() * 10.0),
-                        Vec3::Y,
-                    );
+                    transform =
+                        transform.looking_at(vec3(curr_pos[0], 0.0, curr_pos[2] * 10.0), Vec3::Y);
                 }
                 5 => {
-                    transform = transform.looking_at(vec3(curr_pos[0].clone(), 0.0, -1.0), Vec3::Y);
+                    transform = transform.looking_at(vec3(curr_pos[0], 0.0, -1.0), Vec3::Y);
                     transform.rotate_local_y(1.57);
                 }
                 6 => {
-                    transform = transform.looking_at(
-                        vec3(curr_pos[0].clone(), 0.0, curr_pos[2].clone() * 10.0),
-                        Vec3::Y,
-                    );
+                    transform =
+                        transform.looking_at(vec3(curr_pos[0], 0.0, curr_pos[2] * 10.0), Vec3::Y);
                     transform.rotate_local_y(-1.57);
-                }
-                11 => {
-                    transform = transform.looking_at(vec3(10.0, 0.0, 0.0), Vec3::Y);
                 }
                 _ => {}
             }
