@@ -337,7 +337,8 @@ mod tests {
     #[test]
     fn test_rooms_plugin_build() {
         let mut app = App::new();
-        app.add_plugins((MinimalPlugins, RoomsPlugin));
+        app.init_asset::<WorldAsset>()
+            .add_plugins((MinimalPlugins, RoomsPlugin));
         app.update();
         assert!(app.is_plugin_added::<RoomsPlugin>());
     }
