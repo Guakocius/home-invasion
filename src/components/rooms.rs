@@ -206,6 +206,8 @@ fn generate_rooms(_commands: Commands) {
 
 /// This module defines the Office.
 pub mod office {
+    use std::f32::consts::PI;
+
     use super::Rooms;
     use bevy::{
         gltf::{GltfExtras, GltfMaterialExtras, GltfMeshExtras, GltfSceneExtras},
@@ -242,7 +244,7 @@ pub mod office {
             String::from("Wall_office_door"),
         ];
 
-        let walls = [1, 3, 1, 0, 0, 3, 1, 0, 1, 0, 0, 0,]
+        let walls = [1, 3, 1, 0, 0, 3, 1, 0, 1, 0, 0, 0]
             .iter()
             .map(|i| assets[*i].clone())
             .collect::<Vec<String>>();
@@ -256,9 +258,9 @@ pub mod office {
                 Transform::from_translation(Vec3::new(curr_pos[0], curr_pos[1], curr_pos[2]));
 
             match idx {
-                2..=5 => transform.rotate_local_y(1.57),
-                6 | 7 => transform.rotate_local_y(3.14),
-                8..=11 => transform.rotate_local_y(-1.57),
+                2..=5 => transform.rotate_local_y(PI / 2.0),
+                6 | 7 => transform.rotate_local_y(PI),
+                8..=11 => transform.rotate_local_y(-PI / 2.0),
                 _ => {}
             }
 
@@ -278,15 +280,12 @@ pub mod office {
             [pos[1], pos[0], pos[2]],
             [pos[1], pos[0], pos[0]],
             [pos[1], pos[0], pos[3]],
-
             [pos[2], pos[0], pos[3]],
             [pos[0], pos[0], pos[3]],
             [pos[3], pos[0], pos[3]],
-
             [pos[4], pos[0], pos[3]],
             [pos[4], pos[0], pos[0]],
             [pos[4], pos[0], pos[2]],
-
             [pos[3], pos[0], pos[2]],
             [pos[0], pos[0], pos[2]],
             [pos[2], pos[0], pos[2]],
@@ -296,8 +295,7 @@ pub mod office {
     fn spawn_bookshelf(mut cmds: Commands, asset_server: Res<AssetServer>) {
         let bookshelf_pos = [-6.0, -3.0, 0.0, 3.0, 6.0];
 
-        // Bookshelf
-        bookshelf_pos.iter().for_each(|pos| {
+        for pos in &bookshelf_pos {
             let mut transform = Transform::from_translation(Vec3::new(15.0, 0.0, *pos));
             transform.rotate_local_y(1.57);
             cmds.spawn((
@@ -307,7 +305,7 @@ pub mod office {
                 ),
                 transform.with_scale(SCALE),
             ));
-        });
+        }
     }
 }
 
