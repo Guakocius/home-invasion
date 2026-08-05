@@ -204,6 +204,106 @@ fn generate_rooms(_commands: Commands) {
     let _wall = Wall::new(50.0, 2.0, Vec3::ZERO, "todo.jpg".into());
 }
 
+/// This module defines the Office.
+pub mod office {
+    use super::Rooms;
+    use bevy::{
+        gltf::{GltfExtras, GltfMaterialExtras, GltfMeshExtras, GltfSceneExtras},
+        prelude::*,
+    };
+
+    /// Plugin for all the systems associated with the [`Rooms::Office`].
+    ///
+    /// # Examples
+    /// Loads and spawns the needed x.blend files.
+    /// ```no_run
+    /// use bevy::prelude::*;
+    /// use home_invasion::components::rooms::office::OfficePlugin;
+    ///
+    /// App::new().add_plugins((MinimalPlugins, OfficePlugin)).update();
+    /// ```
+    pub struct OfficePlugin;
+
+    impl Plugin for OfficePlugin {
+        fn build(&self, app: &mut App) {
+            app.add_systems(Startup, setup_office);
+        }
+    }
+
+    fn setup_office(mut cmds: Commands, asset_server: Res<AssetServer>) {
+        let positions = wall_positions();
+
+        let assets: [String; 4] = [
+            String::from("Wall_office"),
+            String::from("Wall_corner_1_office"),
+            String::from("Wall_corner_2_office"),
+            String::from("Wall_office_door"),
+        ];
+
+        let walls = [1, 0, 0, 0, 1, 0, 1, 3, 0, 0, 1, 3]
+            .iter()
+            .map(|i| assets[*i].clone())
+            .collect::<Vec<String>>();
+
+        let len = positions.len();
+
+        for idx in 0..len {
+            let curr_pos = positions[idx];
+
+            let mut transform =
+                Transform::from_translation(Vec3::new(curr_pos[0], curr_pos[1], curr_pos[2]));
+
+            match idx {
+                0 | 11 => {
+                    transform = transform.looking_at(vec3(10.0, 0.0, 0.0), Vec3::Y);
+                }
+                1..=3 => {
+                    transform = transform.looking_at(vec3(curr_pos[0], 0.0, 10.0), Vec3::Y);
+                }
+                4 => {
+                    transform =
+                        transform.looking_at(vec3(curr_pos[0], 0.0, curr_pos[2] * 10.0), Vec3::Y);
+                }
+                5 => {
+                    transform = transform.looking_at(vec3(curr_pos[0], 0.0, -1.0), Vec3::Y);
+                    transform.rotate_local_y(1.57);
+                }
+                6 => {
+                    transform =
+                        transform.looking_at(vec3(curr_pos[0], 0.0, curr_pos[2] * 10.0), Vec3::Y);
+                    transform.rotate_local_y(-1.57);
+                }
+                _ => {}
+            }
+
+            cmds.spawn((
+                WorldAssetRoot(asset_server.load(
+                    GltfAssetLabel::Scene(0).from_asset(format!("models/{:}.glb", walls[idx])),
+                )),
+                transform,
+            ));
+        }
+    }
+
+    fn wall_positions() -> Vec<[f32; 3]> {
+        let pos = [-2.0, 0.0, 1.0, 2.0, 3.0, 5.0, 7.0];
+        vec![
+            [pos[3], pos[1], pos[1]],
+            [pos[3], pos[1], pos[2]],
+            [pos[3], pos[1], pos[4]],
+            [pos[3], pos[1], pos[5]],
+            [pos[3], pos[1], pos[6]],
+            [pos[1], pos[1], pos[6]],
+            [pos[0], pos[1], pos[6]],
+            [pos[0], pos[1], pos[5]],
+            [pos[0], pos[1], pos[4]],
+            [pos[0], pos[1], pos[2]],
+            [pos[0], pos[1], pos[1]],
+            [pos[1], pos[1], pos[1]],
+        ]
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

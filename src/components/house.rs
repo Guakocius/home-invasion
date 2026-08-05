@@ -7,6 +7,8 @@ use bevy::{
 };
 use bevy_rapier3d::prelude::Collider;
 
+use crate::components::rooms::RoomsPlugin;
+
 /// Plugin for the house's systems.
 ///
 /// # Examples
@@ -19,6 +21,7 @@ use bevy_rapier3d::prelude::Collider;
 ///
 /// App::new()
 ///     .add_plugins((MinimalPlugins, AssetPlugin::default(), HousePlugin))
+///     .init_asset::<WorldAsset>()
 ///     .init_asset::<Mesh>()
 ///     .init_asset::<StandardMaterial>()
 ///     .init_asset::<Image>()
@@ -28,7 +31,8 @@ pub struct HousePlugin;
 
 impl Plugin for HousePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, setup_floor);
+        app.add_systems(Startup, setup_floor)
+            .add_plugins(RoomsPlugin);
     }
 }
 
@@ -84,6 +88,7 @@ mod tests {
         let mut app = App::new();
 
         app.add_plugins((MinimalPlugins, AssetPlugin::default(), HousePlugin))
+            .init_asset::<WorldAsset>()
             .init_asset::<Mesh>()
             .init_asset::<StandardMaterial>()
             .init_asset::<Image>()
