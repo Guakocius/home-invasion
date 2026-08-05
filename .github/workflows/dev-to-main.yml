@@ -22,11 +22,11 @@ jobs:
       - name: Cache Cargo dependencies
         uses: Swatinem/rust-cache@v2
 
-      - name: Run Clippy with bevy/dynamic_linking
-        run: cargo clippy -- -D warnings --features bevy/dynamic_linking
+      - name: Run Clippy
+        run: cargo clippy -- -D warnings
 
-      - name: Run Tests with bevy/dynamic_linking
-        run: cargo test --features bevy/dynamic_linking
+      - name: Run Tests
+        run: cargo test
 
   create-and-merge-pr:
     needs: test-and-clippy
