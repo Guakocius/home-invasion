@@ -196,8 +196,7 @@ pub struct RoomsPlugin;
 
 impl Plugin for RoomsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, generate_rooms)
-            .add_plugins(office::OfficePlugin);
+        app.add_systems(Startup, generate_rooms);
     }
 }
 
@@ -205,7 +204,7 @@ fn generate_rooms(_commands: Commands) {
     let _wall = Wall::new(50.0, 2.0, Vec3::ZERO, "todo.jpg".into());
 }
 
-///
+/// This module defines the Office.
 pub mod office {
     use super::Rooms;
     use bevy::{
@@ -213,16 +212,25 @@ pub mod office {
         prelude::*,
     };
 
+    /// Plugin for all the systems associated with the [`Rooms::Office`].
     ///
+    /// # Examples
+    /// Loads and spawns the needed x.blend files.
+    /// ```no_run
+    /// use bevy::prelude::*;
+    /// use home_invasion::components::rooms::office::OfficePlugin;
+    ///
+    /// App::new().add_plugins((MinimalPlugins, OfficePlugin)).update();
+    /// ```
     pub struct OfficePlugin;
 
     impl Plugin for OfficePlugin {
         fn build(&self, app: &mut App) {
-            app.add_systems(Startup, setup);
+            app.add_systems(Startup, setup_office);
         }
     }
 
-    fn setup(mut cmds: Commands, asset_server: Res<AssetServer>) {
+    fn setup_office(mut cmds: Commands, asset_server: Res<AssetServer>) {
         let positions = wall_positions();
 
         let assets: [String; 4] = [
@@ -278,21 +286,21 @@ pub mod office {
     }
 
     fn wall_positions() -> Vec<[f32; 3]> {
-        let pos: Vec<[f32; 3]> = vec![
-            [2.0, 0.0, 0.0],
-            [2.0, 0.0, 1.0],
-            [2.0, 0.0, 3.0],
-            [2.0, 0.0, 5.0],
-            [2.0, 0.0, 7.0],
-            [0.0, 0.0, 7.0],
-            [-2.0, 0.0, 7.0],
-            [-2.0, 0.0, 5.0],
-            [-2.0, 0.0, 3.0],
-            [-2.0, 0.0, 1.0],
-            [-2.0, 0.0, 0.0],
-            [0.0, 0.0, 0.0],
-        ];
-        pos
+        let pos = [-2.0, 0.0, 1.0, 2.0, 3.0, 5.0, 7.0];
+        vec![
+            [pos[3], pos[1], pos[1]],
+            [pos[3], pos[1], pos[2]],
+            [pos[3], pos[1], pos[4]],
+            [pos[3], pos[1], pos[5]],
+            [pos[3], pos[1], pos[6]],
+            [pos[1], pos[1], pos[6]],
+            [pos[0], pos[1], pos[6]],
+            [pos[0], pos[1], pos[5]],
+            [pos[0], pos[1], pos[4]],
+            [pos[0], pos[1], pos[2]],
+            [pos[0], pos[1], pos[1]],
+            [pos[1], pos[1], pos[1]],
+        ]
     }
 }
 
@@ -337,8 +345,7 @@ mod tests {
     #[test]
     fn test_rooms_plugin_build() {
         let mut app = App::new();
-        app.init_asset::<WorldAsset>()
-            .add_plugins((MinimalPlugins, RoomsPlugin));
+        app.add_plugins((MinimalPlugins, RoomsPlugin));
         app.update();
         assert!(app.is_plugin_added::<RoomsPlugin>());
     }

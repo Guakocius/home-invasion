@@ -21,6 +21,7 @@ use crate::components::rooms::RoomsPlugin;
 ///
 /// App::new()
 ///     .add_plugins((MinimalPlugins, AssetPlugin::default(), HousePlugin))
+///     .init_asset::<WorldAsset>()
 ///     .init_asset::<Mesh>()
 ///     .init_asset::<StandardMaterial>()
 ///     .init_asset::<Image>()
