@@ -69,7 +69,7 @@ fn setup_floor(
                 ..default()
             }),
         ),
-        Transform::from_scale(Vec3::splat(10.0)),
+        Transform::from_scale(Vec3::splat(15.0)),
         Visibility::Visible,
     ))
     .with_children(|children| {

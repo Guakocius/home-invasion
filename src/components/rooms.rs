@@ -212,6 +212,8 @@ pub mod office {
         prelude::*,
     };
 
+    const SCALE: Vec3 = Vec3::new(4.0, 4.0, 4.0);
+
     /// Plugin for all the systems associated with the [`Rooms::Office`].
     ///
     /// # Examples
@@ -226,7 +228,7 @@ pub mod office {
 
     impl Plugin for OfficePlugin {
         fn build(&self, app: &mut App) {
-            app.add_systems(Startup, setup_office);
+            app.add_systems(Startup, (setup_office, spawn_bookshelf));
         }
     }
 
@@ -240,7 +242,7 @@ pub mod office {
             String::from("Wall_office_door"),
         ];
 
-        let walls = [1, 0, 0, 0, 1, 0, 1, 3, 0, 0, 1, 3]
+        let walls = [1, 3, 1, 0, 0, 3, 1, 0, 1, 0, 0, 0,]
             .iter()
             .map(|i| assets[*i].clone())
             .collect::<Vec<String>>();
@@ -254,53 +256,58 @@ pub mod office {
                 Transform::from_translation(Vec3::new(curr_pos[0], curr_pos[1], curr_pos[2]));
 
             match idx {
-                0 | 11 => {
-                    transform = transform.looking_at(vec3(10.0, 0.0, 0.0), Vec3::Y);
-                }
-                1..=3 => {
-                    transform = transform.looking_at(vec3(curr_pos[0], 0.0, 10.0), Vec3::Y);
-                }
-                4 => {
-                    transform =
-                        transform.looking_at(vec3(curr_pos[0], 0.0, curr_pos[2] * 10.0), Vec3::Y);
-                }
-                5 => {
-                    transform = transform.looking_at(vec3(curr_pos[0], 0.0, -1.0), Vec3::Y);
-                    transform.rotate_local_y(1.57);
-                }
-                6 => {
-                    transform =
-                        transform.looking_at(vec3(curr_pos[0], 0.0, curr_pos[2] * 10.0), Vec3::Y);
-                    transform.rotate_local_y(-1.57);
-                }
+                2..=5 => transform.rotate_local_y(1.57),
+                6 | 7 => transform.rotate_local_y(3.14),
+                8..=11 => transform.rotate_local_y(-1.57),
                 _ => {}
             }
 
+            // ROOM
             cmds.spawn((
                 WorldAssetRoot(asset_server.load(
                     GltfAssetLabel::Scene(0).from_asset(format!("models/{:}.glb", walls[idx])),
                 )),
-                transform,
+                transform.with_scale(SCALE),
             ));
         }
     }
 
     fn wall_positions() -> Vec<[f32; 3]> {
-        let pos = [-2.0, 0.0, 1.0, 2.0, 3.0, 5.0, 7.0];
+        let pos = [0.0, -16.0, -8.0, 8.0, 16.0];
         vec![
-            [pos[3], pos[1], pos[1]],
-            [pos[3], pos[1], pos[2]],
-            [pos[3], pos[1], pos[4]],
-            [pos[3], pos[1], pos[5]],
-            [pos[3], pos[1], pos[6]],
-            [pos[1], pos[1], pos[6]],
-            [pos[0], pos[1], pos[6]],
-            [pos[0], pos[1], pos[5]],
-            [pos[0], pos[1], pos[4]],
-            [pos[0], pos[1], pos[2]],
-            [pos[0], pos[1], pos[1]],
-            [pos[1], pos[1], pos[1]],
+            [pos[1], pos[0], pos[2]],
+            [pos[1], pos[0], pos[0]],
+            [pos[1], pos[0], pos[3]],
+
+            [pos[2], pos[0], pos[3]],
+            [pos[0], pos[0], pos[3]],
+            [pos[3], pos[0], pos[3]],
+
+            [pos[4], pos[0], pos[3]],
+            [pos[4], pos[0], pos[0]],
+            [pos[4], pos[0], pos[2]],
+
+            [pos[3], pos[0], pos[2]],
+            [pos[0], pos[0], pos[2]],
+            [pos[2], pos[0], pos[2]],
         ]
+    }
+
+    fn spawn_bookshelf(mut cmds: Commands, asset_server: Res<AssetServer>) {
+        let bookshelf_pos = [-6.0, -3.0, 0.0, 3.0, 6.0];
+
+        // Bookshelf
+        bookshelf_pos.iter().for_each(|pos| {
+            let mut transform = Transform::from_translation(Vec3::new(15.0, 0.0, *pos));
+            transform.rotate_local_y(1.57);
+            cmds.spawn((
+                WorldAssetRoot(
+                    asset_server
+                        .load(GltfAssetLabel::Scene(0).from_asset("models/Office_Bookshelf.glb")),
+                ),
+                transform.with_scale(SCALE),
+            ));
+        });
     }
 }
 
