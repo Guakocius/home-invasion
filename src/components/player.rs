@@ -59,7 +59,6 @@ pub struct Player {
 }
 
 impl Player {
-    #[must_use]
     /// Creates a new Player with given radius, length, [`PlayerSpeed`], either [`FreeCamera`] or [`Camera`] (the other is [`None`]) and some default values.
     ///
     /// # Examples
@@ -78,6 +77,7 @@ impl Player {
     /// assert!(player.free_camera.is_some());
     /// assert!(player.camera.is_none());
     /// ```
+    #[must_use]
     pub fn new(
         radius: f32,
         length: f32,

@@ -27,12 +27,19 @@
 #![allow(clippy::needless_pass_by_value)]
 #![allow(clippy::empty_docs)]
 #![allow(unused_imports)]
-///
+/// Component modules for the game.
 pub mod components {
     pub mod cam;
+    pub mod game_menu;
     pub mod house;
     pub mod player;
     pub mod rooms;
 }
 
-use components::{cam::*, house::*, player::*, rooms::*};
+/// Utility modules such as the macros.
+pub mod utils {
+    pub mod macros;
+}
+
+use components::{cam::*, game_menu::*, house::*, player::*, rooms::*};
+use utils::macros::*;
