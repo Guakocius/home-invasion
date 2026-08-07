@@ -80,8 +80,24 @@ pub struct Wall {
 const WALL_HEIGHT: f32 = 30.0;
 
 impl Wall {
+    /// Creates a new Wall with a specified width, depth, a fix height, a position and its texture.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use bevy::prelude::*;
+    /// use home_invasion::components::rooms::Wall;
+    ///
+    /// const ERROR_MARGIN: f32 = 0.1;
+    ///
+    /// let wall = Wall::new(10.0, 2.0, Vec3::ZERO, String::from("assets/textures/test.png"));
+    ///
+    /// assert!((wall.height - 30.0).abs() < ERROR_MARGIN);
+    /// assert!((wall.width - 10.0).abs() < ERROR_MARGIN);
+    /// assert!((wall.depth - 2.0).abs() < ERROR_MARGIN);
+    /// ```
     #[must_use]
-    fn new(width: f32, depth: f32, pos: Vec3, texture: String) -> Self {
+    pub fn new(width: f32, depth: f32, pos: Vec3, texture: String) -> Self {
         Self {
             height: WALL_HEIGHT,
             width,
@@ -195,20 +211,60 @@ impl fmt::Display for Rooms {
 pub struct RoomsPlugin;
 
 impl Plugin for RoomsPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_systems(Startup, generate_rooms);
+    fn build(&self, _app: &mut App) {
+        // app.add_systems(Startup, generate_rooms);
     }
 }
 
-fn generate_rooms(_commands: Commands) {
-    let _wall = Wall::new(50.0, 2.0, Vec3::ZERO, "todo.jpg".into());
+/// Generate rooms based on the given parameters.
+///
+/// # Examples
+///
+/// ```
+/// use home_invasion::components::rooms::generate_rooms;
+///
+/// let room = generate_rooms(16.0, 32.0, 16.0);
+/// ```
+#[must_use]
+pub fn generate_rooms(half_width: f32, half_depth: f32, step: f32) -> Vec<Vec3> {
+    let mut positions = Vec::new();
+
+    // West wall
+    let mut z = -half_depth;
+    while z <= half_depth {
+        positions.push(Vec3::new(-half_width, 0.0, z));
+        z += step;
+    }
+
+    // North wall
+    let mut x = -half_width + step;
+    while x <= half_width {
+        positions.push(Vec3::new(x, 0.0, half_depth));
+        x += step;
+    }
+
+    // East wall
+    z = half_depth - step;
+    while z >= -half_depth {
+        positions.push(Vec3::new(half_width, 0.0, z));
+        z -= step;
+    }
+
+    // South wall
+    x = half_width - step;
+    while x > -half_width {
+        positions.push(Vec3::new(x, 0.0, -half_depth));
+        x -= step;
+    }
+
+    positions
 }
 
 /// This module defines the Office.
 pub mod office {
     use std::f32::consts::PI;
 
-    use super::Rooms;
+    use super::{Rooms, generate_rooms};
     use bevy::{
         gltf::{GltfExtras, GltfMaterialExtras, GltfMeshExtras, GltfSceneExtras},
         prelude::*,
@@ -235,7 +291,7 @@ pub mod office {
     }
 
     fn setup_office(mut cmds: Commands, asset_server: Res<AssetServer>) {
-        let positions = wall_positions();
+        let positions = generate_rooms(16.0, 8.0, 8.0);
 
         let assets: [String; 4] = [
             String::from("Wall_office"),
@@ -264,7 +320,6 @@ pub mod office {
                 _ => {}
             }
 
-            // ROOM
             cmds.spawn((
                 WorldAssetRoot(asset_server.load(
                     GltfAssetLabel::Scene(0).from_asset(format!("models/{:}.glb", walls[idx])),
@@ -274,30 +329,12 @@ pub mod office {
         }
     }
 
-    fn wall_positions() -> Vec<[f32; 3]> {
-        let pos = [0.0, -16.0, -8.0, 8.0, 16.0];
-        vec![
-            [pos[1], pos[0], pos[2]],
-            [pos[1], pos[0], pos[0]],
-            [pos[1], pos[0], pos[3]],
-            [pos[2], pos[0], pos[3]],
-            [pos[0], pos[0], pos[3]],
-            [pos[3], pos[0], pos[3]],
-            [pos[4], pos[0], pos[3]],
-            [pos[4], pos[0], pos[0]],
-            [pos[4], pos[0], pos[2]],
-            [pos[3], pos[0], pos[2]],
-            [pos[0], pos[0], pos[2]],
-            [pos[2], pos[0], pos[2]],
-        ]
-    }
-
     fn spawn_bookshelf(mut cmds: Commands, asset_server: Res<AssetServer>) {
         let bookshelf_pos = [-6.0, -3.0, 0.0, 3.0, 6.0];
 
         for pos in &bookshelf_pos {
             let mut transform = Transform::from_translation(Vec3::new(15.0, 0.0, *pos));
-            transform.rotate_local_y(1.57);
+            transform.rotate_local_y(PI / 2.0);
             cmds.spawn((
                 WorldAssetRoot(
                     asset_server
