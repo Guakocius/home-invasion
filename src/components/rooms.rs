@@ -289,7 +289,7 @@ pub mod office {
 
     impl Plugin for OfficePlugin {
         fn build(&self, app: &mut App) {
-            app.add_systems(Startup, (setup_office, spawn_bookshelf))
+            app.add_systems(Startup, (setup_office, spawn_bookshelf, spawn_table))
                 .add_observer(apply_bookshelf_texture);
         }
     }
@@ -395,6 +395,29 @@ pub mod office {
                 name => info!("Not replacing: {name}"),
             }
         }
+    }
+
+    fn spawn_table(
+        mut cmds: Commands,
+        asset_server: Res<AssetServer>,
+        mut materials: ResMut<Assets<StandardMaterial>>,
+    ) {
+        let bookshelf_pos = Vec3::new(5.0, 0.0, -0.5);
+
+        let mut transform = Transform::from_translation(bookshelf_pos);
+        transform.rotate_local_y(PI);
+        cmds.spawn((
+            WorldAssetRoot(
+                asset_server.load(GltfAssetLabel::Scene(0).from_asset("models/Office_Table.glb")),
+            ),
+            MeshMaterial3d(materials.add(StandardMaterial {
+                base_color: Color::from(WHITE),
+                unlit: true,
+                ..default()
+            })),
+            transform.with_scale(SCALE),
+            Bookshelf,
+        ));
     }
 }
 
