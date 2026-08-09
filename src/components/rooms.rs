@@ -266,8 +266,11 @@ pub mod office {
 
     use super::{Rooms, generate_rooms};
     use bevy::{
-        gltf::{GltfExtras, GltfMaterialExtras, GltfMeshExtras, GltfSceneExtras},
+        color::palettes::css::WHITE,
+        ecs::event::Trigger,
+        gltf::{GltfExtras, GltfMaterialExtras, GltfMaterialName, GltfMeshExtras, GltfSceneExtras},
         prelude::*,
+        world_serialization::WorldInstanceReady,
     };
 
     const SCALE: Vec3 = Vec3::new(4.0, 4.0, 4.0);
@@ -286,7 +289,8 @@ pub mod office {
 
     impl Plugin for OfficePlugin {
         fn build(&self, app: &mut App) {
-            app.add_systems(Startup, (setup_office, spawn_bookshelf));
+            app.add_systems(Startup, (setup_office, spawn_bookshelf))
+                .add_observer(apply_bookshelf_texture);
         }
     }
 
@@ -329,7 +333,14 @@ pub mod office {
         }
     }
 
-    fn spawn_bookshelf(mut cmds: Commands, asset_server: Res<AssetServer>) {
+    #[derive(Component)]
+    struct Bookshelf;
+
+    fn spawn_bookshelf(
+        mut cmds: Commands,
+        asset_server: Res<AssetServer>,
+        mut materials: ResMut<Assets<StandardMaterial>>,
+    ) {
         let bookshelf_pos = [-6.0, -3.0, 0.0, 3.0, 6.0];
 
         for pos in &bookshelf_pos {
@@ -340,8 +351,49 @@ pub mod office {
                     asset_server
                         .load(GltfAssetLabel::Scene(0).from_asset("models/Office_Bookshelf.glb")),
                 ),
+                MeshMaterial3d(materials.add(StandardMaterial {
+                    base_color: Color::from(WHITE),
+                    unlit: true,
+                    ..default()
+                })),
                 transform.with_scale(SCALE),
+                Bookshelf,
             ));
+        }
+    }
+
+    fn apply_bookshelf_texture(
+        scene_ready: On<WorldInstanceReady>,
+        mut cmds: Commands,
+        asset_server: Res<AssetServer>,
+        children: Query<&Children>,
+        bookshelf_query: Query<&Bookshelf>,
+        mesh_materials: Query<(&MeshMaterial3d<StandardMaterial>, &GltfMaterialName)>,
+        mut standard_mat: ResMut<Assets<StandardMaterial>>,
+    ) {
+        let Ok(_bookshelf_query) = bookshelf_query.get(scene_ready.entity) else {
+            info!("{} doesn't have Component: Bookshelf", scene_ready.entity);
+            return;
+        };
+
+        for descendant in children.iter_descendants(scene_ready.entity) {
+            let Ok((_id, material_name)) = mesh_materials.get(descendant) else {
+                continue;
+            };
+
+            let texture: Handle<Image> = asset_server.load("textures/Dark_Wood_texture.png");
+            let material: Handle<StandardMaterial> = standard_mat.add(StandardMaterial {
+                base_color_texture: Some(texture),
+                ..default()
+            });
+
+            match material_name.0.as_str() {
+                "Wooden" => {
+                    cmds.entity(descendant)
+                        .insert(MeshMaterial3d(material.clone()));
+                }
+                name => info!("Not replacing: {name}"),
+            }
         }
     }
 }
