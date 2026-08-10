@@ -477,7 +477,7 @@ pub mod office {
 
         let pos = generate_rooms(16.0, 8.0, 8.0);
 
-        for i in [1, 5].iter() {
+        for i in &[1, 5] {
             let curr_pos = pos[*i];
             let mut transform = Transform::from_xyz(curr_pos.x, curr_pos.y, curr_pos.z);
             if *i == 5 {
@@ -553,7 +553,7 @@ pub mod office {
         animations: &Animations,
     ) -> bool {
         if let Some(action) = &mut player.animation(door_idx) {
-            if action.is_finished() {
+            && action.is_finished() {
                 info!("Replaying door animation..");
                 player.play(door_idx).replay();
 
