@@ -107,6 +107,22 @@ impl Wall {
         }
     }
 
+    /// Creates a new Wall for the Office with height: 2.87, width: 2.0, depth: 0.114
+    /// and a specific position.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use bevy::prelude::*;
+    /// use home_invasion::components::rooms::Wall;
+    ///
+    /// let wall = Wall::office_wall(0.0, 0.0, 0.0);
+    ///
+    /// assert_eq!(wall.height, 2.87);
+    /// assert_eq!(wall.width, 2.0);
+    /// assert_eq!(wall.depth, 0.114);
+    /// ```
+    #[must_use]
     pub fn office_wall(position: Vec3) -> Self {
         Self {
             height: 2.87,
