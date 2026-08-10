@@ -116,7 +116,7 @@ impl Wall {
     /// use bevy::prelude::*;
     /// use home_invasion::components::rooms::Wall;
     ///
-    /// let wall = Wall::office_wall(0.0, 0.0, 0.0);
+    /// let wall = Wall::office_wall(Vec3::new(0.0, 0.0, 0.0));
     ///
     /// assert_eq!(wall.height, 2.87);
     /// assert_eq!(wall.width, 2.0);
