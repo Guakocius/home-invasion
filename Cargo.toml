@@ -37,6 +37,7 @@ bevy = { version = "0.19.0", default-features = false, features = [
   "bevy_color",
   "tonemapping_luts",
   "zstd_rust",
+  "wayland",
 ] }
 
 bevy_camera_controller = { version = "0.19.0", default-features = false, features = [

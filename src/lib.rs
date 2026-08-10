@@ -27,6 +27,11 @@
 #![allow(clippy::needless_pass_by_value)]
 #![allow(clippy::empty_docs)]
 #![allow(unused_imports)]
+/// Modules for environment-specific configurations.
+pub mod cfg {
+    pub mod window_plugin;
+}
+
 /// Component modules for the game.
 pub mod components {
     pub mod cam;
@@ -41,5 +46,6 @@ pub mod utils {
     pub mod macros;
 }
 
+use cfg::window_plugin::*;
 use components::{cam::*, game_menu::*, house::*, player::*, rooms::*};
 use utils::macros::*;
