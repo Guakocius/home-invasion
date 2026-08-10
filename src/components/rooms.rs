@@ -482,7 +482,7 @@ pub mod office {
             let mut transform = Transform::from_xyz(curr_pos.x, curr_pos.y, curr_pos.z);
             if *i == 5 {
                 transform.rotate_local_y(PI / 2.0);
-            };
+            }
 
             let door = Door::new(transform.translation);
 
@@ -541,7 +541,7 @@ pub mod office {
                 continue;
             };
 
-            play_animation(door_idx, &mut player, animations)
+            play_animation(door_idx, &mut player, animations);
         }
     }
 
@@ -561,6 +561,12 @@ pub mod office {
             }
         } else {
             info!("Is currently Playing");
+        }
+
+        player.play(door_idx);
+
+        if let Some(&handle_idx) = animations.index.get("Door_Handles") {
+            player.play(handle_idx);
         }
     }
 }
