@@ -106,6 +106,16 @@ impl Wall {
             texture,
         }
     }
+
+    pub fn office_wall(position: Vec3) -> Self {
+        Self {
+            height: 2.87,
+            width: 2.0,
+            depth: 0.114,
+            pos: position,
+            texture: "NONE".into(),
+        }
+    }
 }
 
 /// This structure defines the doors of each [`Room`].
@@ -276,7 +286,7 @@ pub fn generate_rooms(half_width: f32, half_depth: f32, step: f32) -> Vec<Vec3> 
 pub mod office {
     use std::{collections::HashMap, f32::consts::PI};
 
-    use crate::components::rooms::Door;
+    use crate::components::rooms::{Door, Wall};
 
     use super::{Rooms, generate_rooms};
     use bevy::{
@@ -342,11 +352,14 @@ pub mod office {
                 _ => {}
             }
 
+            let wall = Wall::office_wall(transform.translation);
+
             cmds.spawn((
                 WorldAssetRoot(asset_server.load(
                     GltfAssetLabel::Scene(0).from_asset(format!("models/{:}.glb", walls[idx])),
                 )),
                 transform.with_scale(SCALE),
+                wall,
             ));
         }
     }
