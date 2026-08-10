@@ -541,7 +541,7 @@ pub mod office {
                 continue;
             };
 
-            if play_animation(door_idx, &mut player, animations) == false {
+            if !play_animation(door_idx, &mut player, animations) {
                 continue;
             }
         }
@@ -563,6 +563,7 @@ pub mod office {
                 if let Some(&handle_idx) = animations.index.get("Door_Handles") {
                     player.play(handle_idx).replay();
                 }
+                return true;
             }
         }
 
