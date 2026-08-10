@@ -1,4 +1,4 @@
-//! Environment-specific (Windows, MacOS, Linux) [`WindowPlugin`] configurations.
+//! Environment-specific (`Windows`, `MacOS`, `Linux`) [`WindowPlugin`] configurations.
 use bevy::prelude::*;
 use bevy::window::{PresentMode, WindowMode, WindowPlugin, WindowResolution};
 use std::env;
@@ -27,7 +27,8 @@ use std::env;
 ///
 ///     assert_eq!(window.present_mode, expected_present_mode);
 /// }
-/// ````
+/// ```
+#[must_use]
 pub fn build_platform_window_plugin() -> WindowPlugin {
     let mut primary_window = Window {
         title: "Home Invasion".into(),
