@@ -106,6 +106,32 @@ impl Wall {
             texture,
         }
     }
+
+    /// Creates a new Wall for the Office with height: 2.87, width: 2.0, depth: 0.114
+    /// and a specific position.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use bevy::prelude::*;
+    /// use home_invasion::components::rooms::Wall;
+    ///
+    /// let wall = Wall::office_wall(Vec3::new(0.0, 0.0, 0.0));
+    ///
+    /// assert_eq!(wall.height, 2.87);
+    /// assert_eq!(wall.width, 2.0);
+    /// assert_eq!(wall.depth, 0.114);
+    /// ```
+    #[must_use]
+    pub fn office_wall(position: Vec3) -> Self {
+        Self {
+            height: 2.87,
+            width: 2.0,
+            depth: 0.114,
+            pos: position,
+            texture: "NONE".into(),
+        }
+    }
 }
 
 /// This structure defines the doors of each [`Room`].
@@ -276,7 +302,7 @@ pub fn generate_rooms(half_width: f32, half_depth: f32, step: f32) -> Vec<Vec3> 
 pub mod office {
     use std::{collections::HashMap, f32::consts::PI};
 
-    use crate::components::rooms::Door;
+    use crate::components::rooms::{Door, Wall};
 
     use super::{Rooms, generate_rooms};
     use bevy::{
@@ -342,11 +368,14 @@ pub mod office {
                 _ => {}
             }
 
+            let wall = Wall::office_wall(transform.translation);
+
             cmds.spawn((
                 WorldAssetRoot(asset_server.load(
                     GltfAssetLabel::Scene(0).from_asset(format!("models/{:}.glb", walls[idx])),
                 )),
                 transform.with_scale(SCALE),
+                wall,
             ));
         }
     }
