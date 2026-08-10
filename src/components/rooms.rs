@@ -553,7 +553,7 @@ pub mod office {
         animations: &Animations,
     ) -> bool {
         if let Some(action) = &mut player.animation(door_idx) {
-            && action.is_finished() {
+            if action.is_finished() {
                 info!("Replaying door animation..");
                 player.play(door_idx).replay();
 
@@ -562,7 +562,7 @@ pub mod office {
                 }
                 return true;
             }
-        }
+        };
         info!("Is currently Playing");
         false
     }
