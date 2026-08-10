@@ -140,6 +140,18 @@ pub struct Door {
     pub texture: String,
 }
 
+impl Door {
+    fn new(position: Vec3) -> Self {
+        Self {
+            height: 1.9,
+            width: 0.914,
+            depth: 0.14,
+            pos: position,
+            texture: "NONE".into(),
+        }
+    }
+}
+
 /// This structure defines each `Room` and its contents.
 ///
 /// # Examples
@@ -262,13 +274,17 @@ pub fn generate_rooms(half_width: f32, half_depth: f32, step: f32) -> Vec<Vec3> 
 
 /// This module defines the Office.
 pub mod office {
-    use std::f32::consts::PI;
+    use std::{collections::HashMap, f32::consts::PI};
+
+    use crate::components::rooms::Door;
 
     use super::{Rooms, generate_rooms};
     use bevy::{
+        animation::{AnimationPlayer, graph::AnimationGraph},
         color::palettes::css::WHITE,
         ecs::event::Trigger,
         gltf::{GltfExtras, GltfMaterialExtras, GltfMaterialName, GltfMeshExtras, GltfSceneExtras},
+        input::common_conditions::input_just_pressed,
         prelude::*,
         world_serialization::WorldInstanceReady,
     };
@@ -289,22 +305,23 @@ pub mod office {
 
     impl Plugin for OfficePlugin {
         fn build(&self, app: &mut App) {
-            app.add_systems(Startup, (setup_office, spawn_bookshelf, spawn_table))
-                .add_observer(apply_bookshelf_texture);
+            app.add_systems(
+                Startup,
+                (setup_office, spawn_bookshelf, spawn_table, setup_animation),
+            )
+            .add_systems(Update, open_door.run_if(input_just_pressed(KeyCode::KeyE)));
         }
     }
 
     fn setup_office(mut cmds: Commands, asset_server: Res<AssetServer>) {
         let positions = generate_rooms(16.0, 8.0, 8.0);
 
-        let assets: [String; 4] = [
+        let assets: [String; 2] = [
             String::from("Wall_office"),
             String::from("Wall_corner_1_office"),
-            String::from("Wall_corner_2_office"),
-            String::from("Wall_office_door"),
         ];
 
-        let walls = [1, 3, 1, 0, 0, 3, 1, 0, 1, 0, 0, 0]
+        let walls = [1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0]
             .iter()
             .map(|i| assets[*i].clone())
             .collect::<Vec<String>>();
@@ -318,7 +335,8 @@ pub mod office {
                 Transform::from_translation(Vec3::new(curr_pos[0], curr_pos[1], curr_pos[2]));
 
             match idx {
-                2..=5 => transform.rotate_local_y(PI / 2.0),
+                1 | 5 => continue,
+                2..=4 => transform.rotate_local_y(PI / 2.0),
                 6 | 7 => transform.rotate_local_y(PI),
                 8..=11 => transform.rotate_local_y(-PI / 2.0),
                 _ => {}
@@ -358,7 +376,8 @@ pub mod office {
                 })),
                 transform.with_scale(SCALE),
                 Bookshelf,
-            ));
+            ))
+            .observe(apply_bookshelf_texture);
         }
     }
 
@@ -372,7 +391,7 @@ pub mod office {
         mut standard_mat: ResMut<Assets<StandardMaterial>>,
     ) {
         let Ok(_bookshelf_query) = bookshelf_query.get(scene_ready.entity) else {
-            info!("{} doesn't have Component: Bookshelf", scene_ready.entity);
+            // info!("{} doesn't have Component: Bookshelf", scene_ready.entity);
             return;
         };
 
@@ -418,6 +437,140 @@ pub mod office {
             transform.with_scale(SCALE),
             Bookshelf,
         ));
+    }
+
+    #[derive(Component, Clone)]
+    struct Animations {
+        handle: Handle<AnimationGraph>,
+        index: HashMap<String, AnimationNodeIndex>,
+    }
+
+    fn setup_animation(
+        mut cmds: Commands,
+        asset_server: Res<AssetServer>,
+        mut graphs: ResMut<Assets<AnimationGraph>>,
+    ) {
+        let door_path = "models/Wall_office_door.glb";
+
+        let mut graph = AnimationGraph::new();
+        let mut hash = HashMap::new();
+
+        for (i, name) in ["Door", "Door_Handles", "Door_inner_glas"]
+            .iter()
+            .enumerate()
+        {
+            let clip = asset_server.load(GltfAssetLabel::Animation(i).from_asset(door_path));
+            let idx = graph.add_clip(clip, 1.0, graph.root);
+            hash.insert(name.to_string(), idx);
+        }
+
+        let graph_handle = graphs.add(graph);
+
+        let animations = Animations {
+            handle: graph_handle,
+            index: hash,
+        };
+
+        let scene = WorldAssetRoot(
+            asset_server.load(GltfAssetLabel::Scene(0).from_asset("models/Wall_office_door.glb")),
+        );
+
+        let pos = generate_rooms(16.0, 8.0, 8.0);
+
+        for i in [1, 5].iter() {
+            let curr_pos = pos[*i];
+            let mut transform = Transform::from_xyz(curr_pos.x, curr_pos.y, curr_pos.z);
+            if *i == 5 {
+                transform.rotate_local_y(PI / 2.0);
+            };
+
+            let door = Door::new(transform.translation);
+
+            cmds.spawn((
+                scene.clone(),
+                animations.clone(),
+                transform.with_scale(SCALE),
+                door,
+            ))
+            .observe(door_animation_ready);
+        }
+    }
+
+    fn door_animation_ready(
+        scene_ready: On<WorldInstanceReady>,
+        mut cmds: Commands,
+        children: Query<&Children>,
+        animations: Query<&Animations>,
+        players: Query<&AnimationPlayer>,
+    ) {
+        let Ok(animations) = animations.get(scene_ready.entity) else {
+            return;
+        };
+
+        for child in children.iter_descendants(scene_ready.entity) {
+            if players.get(child).is_ok() {
+                cmds.entity(child)
+                    .insert(AnimationGraphHandle(animations.handle.clone()))
+                    .insert(animations.clone());
+            }
+        }
+    }
+
+    fn open_door(
+        mut door_query: Query<(Entity, &GlobalTransform, &mut AnimationPlayer, &Animations)>,
+        cam_query: Single<(&Camera3d, &GlobalTransform)>,
+    ) {
+        let (_cam, cam_transform) = cam_query.into_inner();
+
+        for (_door_entity, door_transform, mut player, animations) in &mut door_query.iter_mut() {
+            if cam_transform
+                .translation()
+                .distance(door_transform.translation())
+                > 10.0
+            {
+                info!(
+                    "CAM TOO FAR AWAY From Door: {:}",
+                    cam_transform
+                        .translation()
+                        .distance(door_transform.translation())
+                );
+                continue;
+            }
+
+            let Some(&door_idx) = animations.index.get("Door") else {
+                continue;
+            };
+
+            if play_animation(door_idx, &mut player, animations) == false {
+                continue;
+            }
+        }
+    }
+
+    fn play_animation(
+        door_idx: AnimationNodeIndex,
+        player: &mut AnimationPlayer,
+        animations: &Animations,
+    ) -> bool {
+        if let Some(action) = &mut player.animation(door_idx) {
+            if !action.is_finished() {
+                info!("Is currently Playing");
+                return false;
+            } else {
+                info!("Replaying door animation..");
+                player.play(door_idx).replay();
+
+                if let Some(&handle_idx) = animations.index.get("Door_Handles") {
+                    player.play(handle_idx).replay();
+                }
+            }
+        }
+
+        player.play(door_idx);
+        if let Some(&handle_idx) = animations.index.get("Door_Handles") {
+            player.play(handle_idx);
+        }
+        true
     }
 }
 
