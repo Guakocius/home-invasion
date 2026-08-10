@@ -541,9 +541,7 @@ pub mod office {
                 continue;
             };
 
-            if !play_animation(door_idx, &mut player, animations) {
-                continue;
-            }
+            play_animation(door_idx, &mut player, animations)
         }
     }
 
@@ -551,7 +549,7 @@ pub mod office {
         door_idx: AnimationNodeIndex,
         player: &mut AnimationPlayer,
         animations: &Animations,
-    ) -> bool {
+    ) {
         if let Some(action) = &mut player.animation(door_idx) {
             if action.is_finished() {
                 info!("Replaying door animation..");
@@ -560,11 +558,10 @@ pub mod office {
                 if let Some(&handle_idx) = animations.index.get("Door_Handles") {
                     player.play(handle_idx).replay();
                 }
-                return true;
             }
-        };
-        info!("Is currently Playing");
-        false
+        } else {
+            info!("Is currently Playing");
+        }
     }
 }
 
