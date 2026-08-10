@@ -53,15 +53,18 @@ pub enum Rooms {
 /// use bevy::prelude::*;
 /// use home_invasion::components::rooms::Wall;
 ///
+/// const WALL_HEIGHT: f32 = 2.87;
+/// const WALL_WIDTH: f32 = 2.0;
+/// const WALL_DEPTH: f32 = 0.114;
 /// const ERROR_MARGIN: f32 = 0.1;
 ///
-/// let wall = Wall { height: 10.0, width: 5.0, depth: 2.0, pos: Vec3::ZERO, texture: "/assets/textures/test.jpg".into()};
+/// let wall = Wall { height: WALL_HEIGHT, width: WALL_WIDTH, depth: WALL_DEPTH, pos: Vec3::ZERO, texture: Some("/assets/textures/test.jpg".into())};
 ///
-/// assert!((wall.height - 10.0).abs() < ERROR_MARGIN);
-/// assert!((wall.width - 5.0).abs() < ERROR_MARGIN);
-/// assert!((wall.depth - 2.0).abs() < ERROR_MARGIN);
+/// assert!((wall.height - WALL_HEIGHT).abs() < ERROR_MARGIN);
+/// assert!((wall.width - WALL_WIDTH).abs() < ERROR_MARGIN);
+/// assert!((wall.depth - WALL_DEPTH).abs() < ERROR_MARGIN);
 /// assert_eq!(wall.pos, Vec3::ZERO);
-/// assert_eq!(wall.texture, String::from("/assets/textures/test.jpg"));
+/// assert_eq!(wall.texture, Some(String::from("/assets/textures/test.jpg")));
 /// ```
 #[derive(Component)]
 pub struct Wall {
@@ -74,10 +77,12 @@ pub struct Wall {
     /// The wall's 3-dimensional position in the [`World`].
     pub pos: Vec3,
     /// The wall's texture file path.
-    pub texture: String,
+    pub texture: Option<String>,
 }
 
-const WALL_HEIGHT: f32 = 30.0;
+const WALL_HEIGHT: f32 = 2.87;
+const WALL_WIDTH: f32 = 2.0;
+const WALL_DEPTH: f32 = 0.114;
 
 impl Wall {
     /// Creates a new Wall with a specified width, depth, a fix height, a position and its texture.
@@ -88,51 +93,32 @@ impl Wall {
     /// use bevy::prelude::*;
     /// use home_invasion::components::rooms::Wall;
     ///
+    /// const WALL_HEIGHT: f32 = 2.87;
+    /// const WALL_WIDTH: f32 = 2.0;
+    /// const WALL_DEPTH: f32 = 0.114;
     /// const ERROR_MARGIN: f32 = 0.1;
     ///
-    /// let wall = Wall::new(10.0, 2.0, Vec3::ZERO, String::from("assets/textures/test.png"));
+    /// let wall = Wall::new(Vec3::ZERO, Some(String::from("assets/textures/test.png")));
     ///
-    /// assert!((wall.height - 30.0).abs() < ERROR_MARGIN);
-    /// assert!((wall.width - 10.0).abs() < ERROR_MARGIN);
-    /// assert!((wall.depth - 2.0).abs() < ERROR_MARGIN);
+    /// assert!((wall.height - WALL_HEIGHT).abs() < ERROR_MARGIN);
+    /// assert!((wall.width - WALL_WIDTH).abs() < ERROR_MARGIN);
+    /// assert!((wall.depth - WALL_DEPTH).abs() < ERROR_MARGIN);
     /// ```
     #[must_use]
-    pub fn new(width: f32, depth: f32, pos: Vec3, texture: String) -> Self {
+    pub fn new(pos: Vec3, texture: Option<String>) -> Self {
         Self {
             height: WALL_HEIGHT,
-            width,
-            depth,
+            width: WALL_WIDTH,
+            depth: WALL_DEPTH,
             pos,
             texture,
         }
     }
-
-    /// Creates a new Wall for the Office with height: 2.87, width: 2.0, depth: 0.114
-    /// and a specific position.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use bevy::prelude::*;
-    /// use home_invasion::components::rooms::Wall;
-    ///
-    /// let wall = Wall::office_wall(Vec3::new(0.0, 0.0, 0.0));
-    ///
-    /// assert_eq!(wall.height, 2.87);
-    /// assert_eq!(wall.width, 2.0);
-    /// assert_eq!(wall.depth, 0.114);
-    /// ```
-    #[must_use]
-    pub fn office_wall(position: Vec3) -> Self {
-        Self {
-            height: 2.87,
-            width: 2.0,
-            depth: 0.114,
-            pos: position,
-            texture: "NONE".into(),
-        }
-    }
 }
+
+const DOOR_HEIGHT: f32 = 1.9;
+const DOOR_WIDTH: f32 = 0.914;
+const DOOR_DEPTH: f32 = 0.14;
 
 /// This structure defines the doors of each [`Room`].
 ///
@@ -142,15 +128,18 @@ impl Wall {
 /// use bevy::prelude::*;
 /// use home_invasion::components::rooms::Door;
 ///
+/// const DOOR_HEIGHT: f32 = 1.9;
+/// const DOOR_WIDTH: f32 = 0.914;
+/// const DOOR_DEPTH: f32 = 0.14;
 /// const ERROR_MARGIN: f32 = 0.1;
 ///
-/// let door = Door { height: 5.0, width: 2.0, depth: 1.0, pos: Vec3::ZERO, texture: "/assets/textures/test.jpg".into()};
+/// let door = Door { height: DOOR_HEIGHT, width: DOOR_WIDTH, depth: DOOR_DEPTH, pos: Vec3::ZERO, texture: Some("/assets/textures/test.jpg".into())};
 ///
-/// assert!((door.height - 5.0).abs() < ERROR_MARGIN);
-/// assert!((door.width - 2.0).abs() < ERROR_MARGIN);
-/// assert!((door.depth - 1.0).abs() < ERROR_MARGIN);
+/// assert!((door.height - DOOR_HEIGHT).abs() < ERROR_MARGIN);
+/// assert!((door.width - DOOR_WIDTH).abs() < ERROR_MARGIN);
+/// assert!((door.depth - DOOR_DEPTH).abs() < ERROR_MARGIN);
 /// assert_eq!(door.pos, Vec3::ZERO);
-/// assert_eq!(door.texture, String::from("/assets/textures/test.jpg"));
+/// assert_eq!(door.texture, Some(String::from("/assets/textures/test.jpg")));
 /// ```
 #[derive(Component)]
 pub struct Door {
@@ -163,17 +152,17 @@ pub struct Door {
     /// The door's 3-dimensional position in the [`World`].
     pub pos: Vec3,
     /// The door's texture file path.
-    pub texture: String,
+    pub texture: Option<String>,
 }
 
 impl Door {
-    fn new(position: Vec3) -> Self {
+    fn new(position: Vec3, texture: Option<String>) -> Self {
         Self {
-            height: 1.9,
-            width: 0.914,
-            depth: 0.14,
+            height: DOOR_HEIGHT,
+            width: DOOR_WIDTH,
+            depth: DOOR_DEPTH,
             pos: position,
-            texture: "NONE".into(),
+            texture,
         }
     }
 }
@@ -186,19 +175,26 @@ impl Door {
 /// use bevy::prelude::*;
 /// use home_invasion::components::rooms::{Door, Room, Rooms, Wall};
 ///
+/// const WALL_HEIGHT: f32 = 2.87;
+/// const WALL_WIDTH: f32 = 2.0;
+/// const WALL_DEPTH: f32 = 0.114;
+///
+/// const DOOR_HEIGHT: f32 = 1.9;
+/// const DOOR_WIDTH: f32 = 0.914;
+/// const DOOR_DEPTH: f32 = 0.14;
+///
 /// let mut walls: Vec<Wall> = Vec::new();
-/// const WALL_HEIGHT: f32 = 30.0;
-/// walls.push(Wall { height: WALL_HEIGHT, width: 50.0, depth: 5.0, pos: Vec3::new(30.0, 50.0, 5.0), texture: "/assets/textures/test_wall1.jpg".into() });
-/// walls.push(Wall { height: WALL_HEIGHT, width: 50.0, depth: 5.0, pos: Vec3::new(60.0, 100.0, 10.0), texture: "/assets/textures/test_wall2.jpg".into() });
-/// walls.push(Wall { height: WALL_HEIGHT, width: 50.0, depth: 5.0, pos: Vec3::new(90.0, 150.0, 15.0), texture: "/assets/textures/test_wall3.jpg".into() });
-/// walls.push(Wall { height: WALL_HEIGHT, width: 50.0, depth: 5.0, pos: Vec3::new(120.0, 200.0, 20.0), texture: "/assets/textures/test_wall4.jpg".into() });
+/// walls.push(Wall { height: WALL_HEIGHT, width: WALL_WIDTH, depth: WALL_DEPTH, pos: Vec3::new(30.0, 50.0, 5.0), texture: Some("/assets/textures/test_wall1.jpg".into()) });
+/// walls.push(Wall { height: WALL_HEIGHT, width: WALL_WIDTH, depth: WALL_DEPTH, pos: Vec3::new(60.0, 100.0, 10.0), texture: Some("/assets/textures/test_wall2.jpg".into()) });
+/// walls.push(Wall { height: WALL_HEIGHT, width: WALL_WIDTH, depth: WALL_DEPTH, pos: Vec3::new(90.0, 150.0, 15.0), texture: Some("/assets/textures/test_wall3.jpg".into()) });
+/// walls.push(Wall { height: WALL_HEIGHT, width: WALL_WIDTH, depth: WALL_DEPTH, pos: Vec3::new(120.0, 200.0, 20.0), texture: Some("/assets/textures/test_wall4.jpg".into()) });
 ///
 /// let room = Room {
 ///     room: Rooms::Basement(true),
 ///     walls,
-///     door: Door { height: 10.0, width: 5.0, depth: 1.0, pos: Vec3::ZERO, texture: "/assets/textures/test_door.jpg".into() },
+///     door: Door { height: DOOR_HEIGHT, width: DOOR_WIDTH, depth: DOOR_DEPTH, pos: Vec3::ZERO, texture: Some("/assets/textures/test_door.jpg".into()) },
 ///     pos: Vec3::ZERO,
-///     texture: "/assets/textures/test_room.jpg".into(),
+///     texture: Some("/assets/textures/test_room.jpg".into()),
 /// };
 /// ```
 #[derive(Component)]
@@ -212,7 +208,7 @@ pub struct Room {
     /// The Room's 3-dimensional position in the [`World`].
     pub pos: Vec3,
     /// The Room's texture file path.
-    pub texture: String,
+    pub texture: Option<String>,
 }
 
 impl fmt::Display for Rooms {
@@ -368,7 +364,7 @@ pub mod office {
                 _ => {}
             }
 
-            let wall = Wall::office_wall(transform.translation);
+            let wall = Wall::new(transform.translation, None);
 
             cmds.spawn((
                 WorldAssetRoot(asset_server.load(
@@ -420,7 +416,6 @@ pub mod office {
         mut standard_mat: ResMut<Assets<StandardMaterial>>,
     ) {
         let Ok(_bookshelf_query) = bookshelf_query.get(scene_ready.entity) else {
-            // info!("{} doesn't have Component: Bookshelf", scene_ready.entity);
             return;
         };
 
@@ -513,7 +508,7 @@ pub mod office {
                 transform.rotate_local_y(PI / 2.0);
             }
 
-            let door = Door::new(transform.translation);
+            let door = Door::new(transform.translation, None);
 
             cmds.spawn((
                 scene.clone(),
@@ -552,17 +547,11 @@ pub mod office {
         let (_cam, cam_transform) = cam_query.into_inner();
 
         for (_door_entity, door_transform, mut player, animations) in &mut door_query.iter_mut() {
-            if cam_transform
+            let cam_distance = cam_transform
                 .translation()
-                .distance(door_transform.translation())
-                > 10.0
-            {
-                info!(
-                    "CAM TOO FAR AWAY From Door: {:}",
-                    cam_transform
-                        .translation()
-                        .distance(door_transform.translation())
-                );
+                .distance(door_transform.translation());
+            if cam_distance > 10.0 {
+                info!("CAM TOO FAR AWAY FROM DOOR: {:}", cam_distance);
                 continue;
             }
 
@@ -625,12 +614,7 @@ mod tests {
 
     #[test]
     fn test_wall_generation() {
-        let wall = Wall::new(
-            10.0,
-            2.0,
-            Vec3::ZERO,
-            "/assets/textures/test_wall1.jpg".into(),
-        );
+        let wall = Wall::new(Vec3::ZERO, Some("/assets/textures/test_wall1.jpg".into()));
 
         assert!((wall.height - WALL_HEIGHT) < ERROR_MARGIN);
         assert!((wall.width - 10.0) < ERROR_MARGIN);
