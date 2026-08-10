@@ -553,10 +553,7 @@ pub mod office {
         animations: &Animations,
     ) -> bool {
         if let Some(action) = &mut player.animation(door_idx) {
-            if !action.is_finished() {
-                info!("Is currently Playing");
-                return false;
-            } else {
+            if action.is_finished() {
                 info!("Replaying door animation..");
                 player.play(door_idx).replay();
 
@@ -566,12 +563,8 @@ pub mod office {
                 return true;
             }
         }
-
-        player.play(door_idx);
-        if let Some(&handle_idx) = animations.index.get("Door_Handles") {
-            player.play(handle_idx);
-        }
-        true
+        info!("Is currently Playing");
+        false
     }
 }
 
