@@ -10,7 +10,7 @@
 //!   asset::AssetPlugin,
 //!   input::InputPlugin,
 //!   prelude::*,
-//!   state::app::StatesPlugin
+//!   state::app::StatesPlugin,
 //! };
 //! use bevy_camera_controller::free_camera::FreeCameraPlugin;
 //! use home_invasion::components::{cam::CamPlugin, house::HousePlugin};
@@ -24,7 +24,7 @@
 //!                 StatesPlugin,
 //!                 FreeCameraPlugin,
 //!                 CamPlugin,
-//!                 HousePlugin
+//!                 HousePlugin,
 //!         ));
 //! }
 //! ```
@@ -42,6 +42,7 @@ pub mod cfg {
 
 /// Component modules for the game.
 pub mod components {
+    pub mod animations;
     pub mod cam;
     pub mod game_menu;
     pub mod house;
@@ -55,5 +56,5 @@ pub mod utils {
 }
 
 use cfg::window_plugin::*;
-use components::{cam::*, game_menu::*, house::*, player::*, rooms::*};
+use components::{animations::*, cam::*, game_menu::*, house::*, player::*, rooms::*};
 use utils::macros::*;

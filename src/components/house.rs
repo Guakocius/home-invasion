@@ -8,7 +8,7 @@ use bevy::{
 };
 use bevy_rapier3d::prelude::Collider;
 
-use crate::components::rooms::RoomsPlugin;
+use crate::components::{animations::AnimationsPlugin, rooms::RoomsPlugin};
 
 /// Plugin for the house's systems.
 ///
@@ -43,7 +43,7 @@ pub struct HousePlugin;
 impl Plugin for HousePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup_floor)
-            .add_plugins(RoomsPlugin);
+            .add_plugins((AnimationsPlugin, RoomsPlugin));
     }
 }
 

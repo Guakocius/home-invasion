@@ -1,17 +1,18 @@
 //! This module defines the room layout and the logic of each of the house's rooms.
 
 use bevy::{
-    animation::{AnimationPlayer, graph::AnimationGraph},
     color::palettes::css::WHITE,
     ecs::event::Trigger,
     gltf::{GltfExtras, GltfMaterialExtras, GltfMaterialName},
-    input::{InputPlugin, common_conditions::input_just_pressed},
+    input::InputPlugin,
     platform::collections::HashMap,
     prelude::{Component, States, *},
     state::app::StatesPlugin,
     world_serialization::WorldInstanceReady,
 };
 use std::{f32::consts::PI, fmt};
+
+use crate::{DoorAnimation, door_animation_ready};
 
 const ERROR_MARGIN: f32 = 0.1;
 const SCALE: Vec3 = Vec3::new(4.0, 4.0, 4.0);
@@ -131,7 +132,6 @@ impl Plugin for RoomsPlugin {
             .init_asset::<AnimationClip>()
             .init_asset::<WorldAsset>()
             .insert_state(Rooms::Office(true))
-            .add_systems(Update, open_door.run_if(input_just_pressed(KeyCode::KeyE)))
             .add_plugins(OfficePlugin);
     }
 }
@@ -260,15 +260,6 @@ pub struct RoomConfig {
     pub door_indices: Vec<usize>,
     /// The `Room's` props.
     pub props: Vec<PropSpec>,
-}
-
-/// Structure containing the door animation handler and the mapped door nodes for the [Handle].
-#[derive(Component, Clone)]
-pub struct DoorAnimation {
-    /// The `Doors'` animation handler.
-    pub handle: Handle<AnimationGraph>,
-    /// Maps all door sub-components into their specific node ID inside the [`AnimationGraph`].
-    pub node_indices: HashMap<String, AnimationNodeIndex>,
 }
 
 /// Generate rooms based on the given parameters.
@@ -605,69 +596,6 @@ fn apply_bookshelf_texture(
             cmds.entity(descendant)
                 .insert(MeshMaterial3d(material.clone()));
         }
-    }
-}
-
-fn door_animation_ready(
-    scene_ready: On<WorldInstanceReady>,
-    mut cmds: Commands,
-    children: Query<&Children>,
-    animations: Query<&DoorAnimation>,
-    players: Query<&AnimationPlayer>,
-) {
-    let Ok(animation_data) = animations.get(scene_ready.entity) else {
-        return;
-    };
-
-    for child in children.iter_descendants(scene_ready.entity) {
-        if players.get(child).is_ok() {
-            cmds.entity(child)
-                .insert(AnimationGraphHandle(animation_data.handle.clone()))
-                .insert(animation_data.clone());
-        }
-    }
-}
-
-fn open_door(
-    mut door_query: Query<(&GlobalTransform, &mut AnimationPlayer, &DoorAnimation)>,
-    cam_query: Single<(&Camera3d, &GlobalTransform)>,
-) {
-    let (_cam, cam_transform) = cam_query.into_inner();
-
-    for (door_transform, mut player, animations) in &mut door_query {
-        let cam_distance = cam_transform
-            .translation()
-            .distance(door_transform.translation());
-        if cam_distance > 10.0 {
-            continue;
-        }
-
-        let Some(&door_idx) = animations.node_indices.get("Door") else {
-            continue;
-        };
-
-        play_animation(door_idx, &mut player, animations);
-    }
-}
-
-fn play_animation(
-    door_idx: AnimationNodeIndex,
-    player: &mut AnimationPlayer,
-    animations: &DoorAnimation,
-) {
-    if let Some(action) = player.animation(door_idx)
-        && action.is_finished()
-    {
-        player.play(door_idx).replay();
-        if let Some(&handle_idx) = animations.node_indices.get("Door_Handles") {
-            player.play(handle_idx).replay();
-        }
-        return;
-    }
-
-    player.play(door_idx);
-    if let Some(&handle_idx) = animations.node_indices.get("Door_Handles") {
-        player.play(handle_idx);
     }
 }
 
