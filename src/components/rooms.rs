@@ -5,9 +5,10 @@ use bevy::{
     color::palettes::css::WHITE,
     ecs::event::Trigger,
     gltf::{GltfExtras, GltfMaterialExtras, GltfMaterialName},
-    input::common_conditions::input_just_pressed,
+    input::{InputPlugin, common_conditions::input_just_pressed},
     platform::collections::HashMap,
     prelude::{Component, States, *},
+    state::app::StatesPlugin,
     world_serialization::WorldInstanceReady,
 };
 use std::{f32::consts::PI, fmt};
@@ -69,8 +70,7 @@ struct Door;
 /// ```
 /// use home_invasion::components::rooms::{Room, Rooms};
 ///
-/// let room = Room { room_type: Rooms::Office(true)};
-/// assert!(room.room_type.0);
+/// let room = Room { room_type: Rooms::Office(true) };
 /// assert_eq!(room.room_type, Rooms::Office(true));
 /// ```
 #[derive(Component, Debug, Clone)]
@@ -105,65 +105,120 @@ impl fmt::Display for Rooms {
 /// # Examples
 ///
 /// ```
-/// use bevy::prelude::*;
+/// use bevy::{
+///   asset::AssetPlugin,
+///   input::InputPlugin,
+///   prelude::*,
+///   state::app::StatesPlugin,
+/// };
 /// use home_invasion::components::rooms::RoomsPlugin;
 ///
-/// App::new().add_plugins((MinimalPlugins, RoomsPlugin)).update();
+/// App::new()
+///   .add_plugins((
+///     MinimalPlugins,
+///     InputPlugin,
+///     AssetPlugin::default(),
+///     StatesPlugin,
+///     RoomsPlugin,
+///   ))
+///   .update();
 /// ```
 pub struct RoomsPlugin;
 
 impl Plugin for RoomsPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_state(Rooms::Office(true))
+        app.init_asset::<AnimationGraph>()
+            .init_asset::<AnimationClip>()
+            .init_asset::<WorldAsset>()
+            .insert_state(Rooms::Office(true))
             .add_systems(Update, open_door.run_if(input_just_pressed(KeyCode::KeyE)))
             .add_plugins(OfficePlugin);
     }
 }
 
-pub enum WallType {
-    Standard,
-    Corner,
-    Door,
-}
-
-pub struct WallSegment {
-    pub transform: Transform,
-    pub wall_type: WallType,
-}
-
-#[derive(Clone)]
-pub struct PropSpec {
-    pub asset_path: String,
-    pub transform: Transform,
-    pub texture_path: Option<String>,
-}
-
-#[derive(Clone)]
-pub struct RoomConfig {
-    pub name: String,
-    pub half_width: f32,
-    pub half_depth: f32,
-    pub step: f32,
-    pub wall_asset: String,
-    pub corner_asset: String,
-    pub door_asset: String,
-    pub door_indices: Vec<usize>,
-    pub props: Vec<PropSpec>,
-}
-
-#[derive(Component, Clone)]
-pub struct DoorAnimation {
-    pub handle: Handle<AnimationGraph>,
-    pub node_indices: HashMap<String, AnimationNodeIndex>,
-}
-
-/// Generate rooms based on the given parameters.
+/// The type of `Wall` applied.
 ///
 /// # Examples
 ///
 /// ```
+/// use home_invasion::components::rooms::WallType;
+///
+/// let wall_type = WallType::Standard;
+///
+/// match wall_type {
+///   WallType::Standard => println!("Standard"),
+///   WallType::Corner => println!("Corner"),
+///   WallType::Door => println!("Door"),
+/// }
+/// ````
+pub enum WallType {
+    /// The standard `Wall` type.
+    Standard,
+    /// The `Wall` type of corners.
+    Corner,
+    /// The `Wall` type of `Doors`.
+    Door,
+}
+
+/// A segment of a `Wall` (north, east, south, west).
+///
+/// # Examples
+///
+/// ```
+/// use std::f32::consts::PI;
 /// use bevy::prelude::*;
-/// use home_invasion::components::rooms::generate_rooms;
+/// use home_invasion::components::rooms::{WallSegment, WallType};
+///
+/// let wall_type = WallType::Standard;
+/// let pos = Vec3::ZERO;
+///
+/// let wall_segment = WallSegment {
+///   transform: Transform::from_translation(pos)
+///     .with_rotation(Quat::from_rotation_y(PI / 2.0)),
+///   wall_type,
+/// };
+/// ```
+pub struct WallSegment {
+    /// The positional transformation of the `Wall`.
+    pub transform: Transform,
+    /// The [type of Wall](WallType).
+    pub wall_type: WallType,
+}
+
+/// The specifications of the props such as the bookshelfs and tables.
+///
+/// # Examples
+///
+/// ```
+/// use std::f32::consts::PI;
+/// use bevy::prelude::*;
+/// use home_invasion::components::rooms::PropSpec;
+///
+/// let mut props = vec![PropSpec {
+///   asset_path: "models/Office_Table.glb".into(),
+///   transform: Transform::from_translation(Vec3::new(5.0, 0.0, -0.5))
+///     .with_rotation(Quat::from_rotation_y(PI)),
+///   texture_path: None,
+/// }];
+/// ```
+#[derive(Clone)]
+pub struct PropSpec {
+    /// The path of the asset.
+    pub asset_path: String,
+    /// The prop's positional transformation.
+    pub transform: Transform,
+    /// The optional path of the prop's texture.
+    pub texture_path: Option<String>,
+}
+
+/// The configuration of a `Room`.
+///
+/// # Examples
+///
+/// ```
+/// use std::f32::consts::PI;
+/// use bevy::prelude::*;
+/// use home_invasion::components::rooms::{PropSpec, RoomConfig};
 ///
 /// let mut props = vec![PropSpec {
 ///   asset_path: "models/Office_Table.glb".into(),
@@ -178,7 +233,67 @@ pub struct DoorAnimation {
 ///   half_depth: 8.0,
 ///   step: 8.0,
 ///   wall_asset: "models/Wall_office.glb".into(),
-///   corner_asset: "models/Wall_corner_1_office.glb".into()
+///   corner_asset: "models/Wall_corner_1_office.glb".into(),
+///   door_asset: "models/Wall_office_door.glb".into(),
+///   door_indices: vec![1, 5],
+///   props,
+/// };
+/// ```
+#[derive(Clone)]
+pub struct RoomConfig {
+    /// The name of the `Room`.
+    pub name: String,
+    /// The half width of the `Room`.
+    pub half_width: f32,
+    /// The half depth of the `Room`.
+    pub half_depth: f32,
+    /// The physical width of a single [`WallSegment`].
+    pub step: f32,
+    /// The asset path of the `Wall`.
+    pub wall_asset: String,
+    /// The asset path of the corners.
+    pub corner_asset: String,
+    /// The asset path of the `Doors`.
+    pub door_asset: String,
+    /// A [Vec] specifying which `Wall` positions around the `Room's` perimeter should be
+    /// spawned as doors.
+    pub door_indices: Vec<usize>,
+    /// The `Room's` props.
+    pub props: Vec<PropSpec>,
+}
+
+/// Structure containing the door animation handler and the mapped door nodes for the [Handle].
+#[derive(Component, Clone)]
+pub struct DoorAnimation {
+    /// The `Doors'` animation handler.
+    pub handle: Handle<AnimationGraph>,
+    /// Maps all door sub-components into their specific node ID inside the [`AnimationGraph`].
+    pub node_indices: HashMap<String, AnimationNodeIndex>,
+}
+
+/// Generate rooms based on the given parameters.
+///
+/// # Examples
+///
+/// ```
+/// use std::f32::consts::PI;
+/// use bevy::prelude::*;
+/// use home_invasion::components::rooms::{PropSpec, RoomConfig, generate_rooms};
+///
+/// let mut props = vec![PropSpec {
+///   asset_path: "models/Office_Table.glb".into(),
+///   transform: Transform::from_translation(Vec3::new(5.0, 0.0, -0.5))
+///     .with_rotation(Quat::from_rotation_y(PI)),
+///   texture_path: None,
+/// }];
+///
+/// let config = RoomConfig {
+///   name: "Office".into(),
+///   half_width: 16.0,
+///   half_depth: 8.0,
+///   step: 8.0,
+///   wall_asset: "models/Wall_office.glb".into(),
+///   corner_asset: "models/Wall_corner_1_office.glb".into(),
 ///   door_asset: "models/Wall_office_door.glb".into(),
 ///   door_indices: vec![1, 5],
 ///   props,
@@ -258,6 +373,59 @@ pub fn generate_rooms(config: &RoomConfig) -> Vec<WallSegment> {
     positions
 }
 
+/// A function spawning a `Room` with all its props, `Walls`, `Doors` and all the `Doors'` animations.
+///
+/// # Examples
+///
+/// ```
+/// use std::f32::consts::PI;
+/// use bevy::{input::InputPlugin, prelude::*, state::app::StatesPlugin};
+/// use home_invasion::components::rooms::{PropSpec, RoomConfig, Rooms, spawn_room};
+///
+/// fn setup(
+///   mut cmds: Commands,
+///   asset_server: Res<AssetServer>,
+///   mut graphs: ResMut<Assets<AnimationGraph>>,
+/// ) {
+///   let mut props = vec![PropSpec {
+///     asset_path: "models/Office_Table.glb".into(),
+///     transform: Transform::from_translation(Vec3::new(5.0, 0.0, -0.5))
+///       .with_rotation(Quat::from_rotation_y(PI)),
+///     texture_path: None,
+///   }];
+///
+///   let office_config = RoomConfig {
+///     name: "Office".into(),
+///     half_width: 16.0,
+///     half_depth: 8.0,
+///     step: 8.0,
+///     wall_asset: "models/Wall_office.glb".into(),
+///     corner_asset: "models/Wall_corner_1_office.glb".into(),
+///     door_asset: "models/Wall_office_door.glb".into(),
+///     door_indices: vec![1, 5],
+///     props,
+///   };
+///   spawn_room(
+///     &mut cmds,
+///     &asset_server,
+///     &mut graphs,
+///     &office_config,
+///     Rooms::Office(true),
+///   );
+/// }
+/// App::new()
+///   .add_plugins((
+///     MinimalPlugins,
+///     InputPlugin,
+///     AssetPlugin::default(),
+///     StatesPlugin,
+///   ))
+///   .init_asset::<AnimationGraph>()
+///   .init_asset::<AnimationClip>()
+///   .init_asset::<WorldAsset>()
+///   .add_systems(Startup, setup)
+///   .update();
+/// ```
 pub fn spawn_room(
     cmds: &mut Commands,
     asset_server: &Res<AssetServer>,
@@ -271,6 +439,7 @@ pub fn spawn_room(
         Room { room_type },
         Transform::default(),
         Visibility::default(),
+        Wall,
     ))
     .with_children(|parent| {
         for position in layout {
@@ -332,11 +501,29 @@ pub fn spawn_room(
 ///
 /// # Examples
 /// Loads and spawns the needed x.blend files.
-/// ```no_run
-/// use bevy::prelude::*;
-/// use home_invasion::components::rooms::office::OfficePlugin;
+/// ```
+/// use bevy::{
+///   asset::AssetPlugin,
+///   animation::AnimationClip,
+///   input::InputPlugin,
+///   prelude::*,
+///   state::app::StatesPlugin,
+///   world_serialization::WorldAsset,
+/// };
+/// use home_invasion::components::rooms::OfficePlugin;
 ///
-/// App::new().add_plugins((MinimalPlugins, OfficePlugin)).update();
+/// App::new()
+///   .add_plugins((
+///     MinimalPlugins,
+///     InputPlugin,
+///     AssetPlugin::default(),
+///     StatesPlugin,
+///     OfficePlugin
+///   ))
+///   .init_asset::<AnimationGraph>()
+///   .init_asset::<AnimationClip>()
+///   .init_asset::<WorldAsset>()
+///   .update();
 /// ```
 pub struct OfficePlugin;
 
@@ -488,8 +675,6 @@ fn play_animation(
 mod tests {
     use super::*;
 
-    const ERROR_MARGIN: f32 = 0.1;
-
     #[test]
     fn test_rooms_fmt() {
         assert_eq!(format!("{}", Rooms::Basement(true)), "Basement");
@@ -510,8 +695,14 @@ mod tests {
     #[test]
     fn test_rooms_plugin_build() {
         let mut app = App::new();
-        app.add_plugins((MinimalPlugins, RoomsPlugin));
-        app.update();
+        app.add_plugins((
+            MinimalPlugins,
+            InputPlugin,
+            AssetPlugin::default(),
+            StatesPlugin,
+            RoomsPlugin,
+        ))
+        .update();
         assert!(app.is_plugin_added::<RoomsPlugin>());
     }
 }
