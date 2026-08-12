@@ -9,16 +9,15 @@ use home_invasion::{
 pub fn build_app() -> App {
     let mut app = App::new();
     app.add_plugins((
-        (
-            DefaultPlugins
-                .set(AssetPlugin {
-                    mode: AssetMode::Unprocessed,
-                    ..default()
-                })
-                .set(build_platform_window_plugin()),
-            FreeCameraPlugin,
-        ),
-        (CamPlugin, HousePlugin),
+        DefaultPlugins
+            .set(AssetPlugin {
+                mode: AssetMode::Unprocessed,
+                ..default()
+            })
+            .set(build_platform_window_plugin()),
+        FreeCameraPlugin,
+        CamPlugin,
+        HousePlugin,
     ));
     app
 }
