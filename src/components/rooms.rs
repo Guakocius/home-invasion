@@ -1,12 +1,19 @@
 //! This module defines the room layout and the logic of each of the house's rooms.
 
-use bevy::platform::collections::HashMap;
-use bevy::prelude::*;
-use bevy::prelude::{Component, States};
-use std::f32::consts::PI;
-use std::fmt;
+use bevy::{
+    animation::{AnimationPlayer, graph::AnimationGraph},
+    color::palettes::css::WHITE,
+    ecs::event::Trigger,
+    gltf::{GltfExtras, GltfMaterialExtras, GltfMaterialName},
+    input::common_conditions::input_just_pressed,
+    platform::collections::HashMap,
+    prelude::{Component, States, *},
+    world_serialization::WorldInstanceReady,
+};
+use std::{f32::consts::PI, fmt};
 
 const ERROR_MARGIN: f32 = 0.1;
+const SCALE: Vec3 = Vec3::new(4.0, 4.0, 4.0);
 
 #[derive(Component, Debug, Clone, Hash, Eq, PartialEq, PartialOrd, Ord, States)]
 /// All rooms of the house with a boolean signifying if whether the player is inside this room or
@@ -49,29 +56,22 @@ pub enum Rooms {
     Toilet(bool),
 }
 
-/// This structure defines the walls of each [`Room`].
-///
-/// # Examples
-/// ```
-/// ```
+#[derive(Component, Debug, Clone, Copy, Default)]
+struct Wall;
 
 #[derive(Component, Debug, Clone, Copy, Default)]
-pub struct Wall;
-
-/// This structure defines the doors of each [`Room`].
-///
-/// # Examples
-///
-/// ```
-/// ```
-#[derive(Component, Debug, Clone, Copy, Default)]
-pub struct Door;
+struct Door;
 
 /// This structure defines each `Room` and its contents.
 ///
 /// # Examples
 ///
 /// ```
+/// use home_invasion::components::rooms::{Room, Rooms};
+///
+/// let room = Room { room_type: Rooms::Office(true)};
+/// assert!(room.room_type.0);
+/// assert_eq!(room.room_type, Rooms::Office(true));
 /// ```
 #[derive(Component, Debug, Clone)]
 pub struct Room {
@@ -113,8 +113,10 @@ impl fmt::Display for Rooms {
 pub struct RoomsPlugin;
 
 impl Plugin for RoomsPlugin {
-    fn build(&self, _app: &mut App) {
-        // app.add_systems(Startup, generate_rooms);
+    fn build(&self, app: &mut App) {
+        app.insert_state(Rooms::Office(true))
+            .add_systems(Update, open_door.run_if(input_just_pressed(KeyCode::KeyE)))
+            .add_plugins(OfficePlugin);
     }
 }
 
@@ -160,9 +162,28 @@ pub struct DoorAnimation {
 /// # Examples
 ///
 /// ```
+/// use bevy::prelude::*;
 /// use home_invasion::components::rooms::generate_rooms;
 ///
-/// let room = generate_rooms(16.0, 32.0, 16.0);
+/// let mut props = vec![PropSpec {
+///   asset_path: "models/Office_Table.glb".into(),
+///   transform: Transform::from_translation(Vec3::new(5.0, 0.0, -0.5))
+///     .with_rotation(Quat::from_rotation_y(PI)),
+///   texture_path: None,
+/// }];
+///
+/// let config = RoomConfig {
+///   name: "Office".into(),
+///   half_width: 16.0,
+///   half_depth: 8.0,
+///   step: 8.0,
+///   wall_asset: "models/Wall_office.glb".into(),
+///   corner_asset: "models/Wall_corner_1_office.glb".into()
+///   door_asset: "models/Wall_office_door.glb".into(),
+///   door_indices: vec![1, 5],
+///   props,
+/// };
+/// let room = generate_rooms(&config);
 /// ```
 #[must_use]
 pub fn generate_rooms(config: &RoomConfig) -> Vec<WallSegment> {
@@ -236,18 +257,6 @@ pub fn generate_rooms(config: &RoomConfig) -> Vec<WallSegment> {
 
     positions
 }
-
-use bevy::{
-    animation::{AnimationPlayer, graph::AnimationGraph},
-    color::palettes::css::WHITE,
-    ecs::event::Trigger,
-    gltf::{GltfExtras, GltfMaterialExtras, GltfMaterialName, GltfMeshExtras, GltfSceneExtras},
-    input::common_conditions::input_just_pressed,
-    prelude::*,
-    world_serialization::WorldInstanceReady,
-};
-
-const SCALE: Vec3 = Vec3::new(4.0, 4.0, 4.0);
 
 pub fn spawn_room(
     cmds: &mut Commands,
@@ -333,8 +342,7 @@ pub struct OfficePlugin;
 
 impl Plugin for OfficePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, setup_office)
-            .add_systems(Update, open_door.run_if(input_just_pressed(KeyCode::KeyE)));
+        app.add_systems(Startup, setup_office);
     }
 }
 
