@@ -12,7 +12,7 @@ use bevy::{
 };
 use std::{f32::consts::PI, fmt};
 
-use crate::{DoorAnimation, door_animation_ready};
+use super::animations::{DoorAnimation, door_animation_ready};
 
 const ERROR_MARGIN: f32 = 0.1;
 const SCALE: Vec3 = Vec3::new(4.0, 4.0, 4.0);
