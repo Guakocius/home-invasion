@@ -1,8 +1,20 @@
 //! This module defines the room layout and the logic of each of the house's rooms.
 
-use bevy::prelude::*;
-use bevy::prelude::{Component, States};
-use std::fmt;
+use bevy::{
+    animation::{AnimationPlayer, graph::AnimationGraph},
+    color::palettes::css::WHITE,
+    ecs::event::Trigger,
+    gltf::{GltfExtras, GltfMaterialExtras, GltfMaterialName},
+    input::{InputPlugin, common_conditions::input_just_pressed},
+    platform::collections::HashMap,
+    prelude::{Component, States, *},
+    state::app::StatesPlugin,
+    world_serialization::WorldInstanceReady,
+};
+use std::{f32::consts::PI, fmt};
+
+const ERROR_MARGIN: f32 = 0.1;
+const SCALE: Vec3 = Vec3::new(4.0, 4.0, 4.0);
 
 #[derive(Component, Debug, Clone, Hash, Eq, PartialEq, PartialOrd, Ord, States)]
 /// All rooms of the house with a boolean signifying if whether the player is inside this room or
@@ -45,170 +57,26 @@ pub enum Rooms {
     Toilet(bool),
 }
 
-/// This structure defines the walls of each [`Room`].
-///
-/// # Examples
-///
-/// ```
-/// use bevy::prelude::*;
-/// use home_invasion::components::rooms::Wall;
-///
-/// const WALL_HEIGHT: f32 = 2.87;
-/// const WALL_WIDTH: f32 = 2.0;
-/// const WALL_DEPTH: f32 = 0.114;
-/// const ERROR_MARGIN: f32 = 0.1;
-///
-/// let wall = Wall { height: WALL_HEIGHT, width: WALL_WIDTH, depth: WALL_DEPTH, pos: Vec3::ZERO, texture: Some("/assets/textures/test.jpg".into())};
-///
-/// assert!((wall.height - WALL_HEIGHT).abs() < ERROR_MARGIN);
-/// assert!((wall.width - WALL_WIDTH).abs() < ERROR_MARGIN);
-/// assert!((wall.depth - WALL_DEPTH).abs() < ERROR_MARGIN);
-/// assert_eq!(wall.pos, Vec3::ZERO);
-/// assert_eq!(wall.texture, Some(String::from("/assets/textures/test.jpg")));
-/// ```
-#[derive(Component)]
-pub struct Wall {
-    /// The wall's height.
-    pub height: f32,
-    /// The wall's width.
-    pub width: f32,
-    /// The wall's depth.
-    pub depth: f32,
-    /// The wall's 3-dimensional position in the [`World`].
-    pub pos: Vec3,
-    /// The wall's texture file path.
-    pub texture: Option<String>,
-}
+#[derive(Component, Debug, Clone, Copy, Default)]
+struct Wall;
 
-const WALL_HEIGHT: f32 = 2.87;
-const WALL_WIDTH: f32 = 2.0;
-const WALL_DEPTH: f32 = 0.114;
-
-impl Wall {
-    /// Creates a new Wall with a specified width, depth, a fix height, a position and its texture.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use bevy::prelude::*;
-    /// use home_invasion::components::rooms::Wall;
-    ///
-    /// const WALL_HEIGHT: f32 = 2.87;
-    /// const WALL_WIDTH: f32 = 2.0;
-    /// const WALL_DEPTH: f32 = 0.114;
-    /// const ERROR_MARGIN: f32 = 0.1;
-    ///
-    /// let wall = Wall::new(Vec3::ZERO, Some(String::from("assets/textures/test.png")));
-    ///
-    /// assert!((wall.height - WALL_HEIGHT).abs() < ERROR_MARGIN);
-    /// assert!((wall.width - WALL_WIDTH).abs() < ERROR_MARGIN);
-    /// assert!((wall.depth - WALL_DEPTH).abs() < ERROR_MARGIN);
-    /// ```
-    #[must_use]
-    pub fn new(pos: Vec3, texture: Option<String>) -> Self {
-        Self {
-            height: WALL_HEIGHT,
-            width: WALL_WIDTH,
-            depth: WALL_DEPTH,
-            pos,
-            texture,
-        }
-    }
-}
-
-const DOOR_HEIGHT: f32 = 1.9;
-const DOOR_WIDTH: f32 = 0.914;
-const DOOR_DEPTH: f32 = 0.14;
-
-/// This structure defines the doors of each [`Room`].
-///
-/// # Examples
-///
-/// ```
-/// use bevy::prelude::*;
-/// use home_invasion::components::rooms::Door;
-///
-/// const DOOR_HEIGHT: f32 = 1.9;
-/// const DOOR_WIDTH: f32 = 0.914;
-/// const DOOR_DEPTH: f32 = 0.14;
-/// const ERROR_MARGIN: f32 = 0.1;
-///
-/// let door = Door { height: DOOR_HEIGHT, width: DOOR_WIDTH, depth: DOOR_DEPTH, pos: Vec3::ZERO, texture: Some("/assets/textures/test.jpg".into())};
-///
-/// assert!((door.height - DOOR_HEIGHT).abs() < ERROR_MARGIN);
-/// assert!((door.width - DOOR_WIDTH).abs() < ERROR_MARGIN);
-/// assert!((door.depth - DOOR_DEPTH).abs() < ERROR_MARGIN);
-/// assert_eq!(door.pos, Vec3::ZERO);
-/// assert_eq!(door.texture, Some(String::from("/assets/textures/test.jpg")));
-/// ```
-#[derive(Component)]
-pub struct Door {
-    /// The door's height.
-    pub height: f32,
-    /// The door's width.
-    pub width: f32,
-    /// The door's depth.
-    pub depth: f32,
-    /// The door's 3-dimensional position in the [`World`].
-    pub pos: Vec3,
-    /// The door's texture file path.
-    pub texture: Option<String>,
-}
-
-impl Door {
-    fn new(position: Vec3, texture: Option<String>) -> Self {
-        Self {
-            height: DOOR_HEIGHT,
-            width: DOOR_WIDTH,
-            depth: DOOR_DEPTH,
-            pos: position,
-            texture,
-        }
-    }
-}
+#[derive(Component, Debug, Clone, Copy, Default)]
+struct Door;
 
 /// This structure defines each `Room` and its contents.
 ///
 /// # Examples
 ///
 /// ```
-/// use bevy::prelude::*;
-/// use home_invasion::components::rooms::{Door, Room, Rooms, Wall};
+/// use home_invasion::components::rooms::{Room, Rooms};
 ///
-/// const WALL_HEIGHT: f32 = 2.87;
-/// const WALL_WIDTH: f32 = 2.0;
-/// const WALL_DEPTH: f32 = 0.114;
-///
-/// const DOOR_HEIGHT: f32 = 1.9;
-/// const DOOR_WIDTH: f32 = 0.914;
-/// const DOOR_DEPTH: f32 = 0.14;
-///
-/// let mut walls: Vec<Wall> = Vec::new();
-/// walls.push(Wall { height: WALL_HEIGHT, width: WALL_WIDTH, depth: WALL_DEPTH, pos: Vec3::new(30.0, 50.0, 5.0), texture: Some("/assets/textures/test_wall1.jpg".into()) });
-/// walls.push(Wall { height: WALL_HEIGHT, width: WALL_WIDTH, depth: WALL_DEPTH, pos: Vec3::new(60.0, 100.0, 10.0), texture: Some("/assets/textures/test_wall2.jpg".into()) });
-/// walls.push(Wall { height: WALL_HEIGHT, width: WALL_WIDTH, depth: WALL_DEPTH, pos: Vec3::new(90.0, 150.0, 15.0), texture: Some("/assets/textures/test_wall3.jpg".into()) });
-/// walls.push(Wall { height: WALL_HEIGHT, width: WALL_WIDTH, depth: WALL_DEPTH, pos: Vec3::new(120.0, 200.0, 20.0), texture: Some("/assets/textures/test_wall4.jpg".into()) });
-///
-/// let room = Room {
-///     room: Rooms::Basement(true),
-///     walls,
-///     door: Door { height: DOOR_HEIGHT, width: DOOR_WIDTH, depth: DOOR_DEPTH, pos: Vec3::ZERO, texture: Some("/assets/textures/test_door.jpg".into()) },
-///     pos: Vec3::ZERO,
-///     texture: Some("/assets/textures/test_room.jpg".into()),
-/// };
+/// let room = Room { room_type: Rooms::Office(true) };
+/// assert_eq!(room.room_type, Rooms::Office(true));
 /// ```
-#[derive(Component)]
+#[derive(Component, Debug, Clone)]
 pub struct Room {
-    /// The type of Room and if the player is currently inside it.
-    pub room: Rooms,
-    /// The Room's [Walls](Wall).
-    pub walls: Vec<Wall>,
-    /// The Room's [Door].
-    pub door: Door,
-    /// The Room's 3-dimensional position in the [`World`].
-    pub pos: Vec3,
-    /// The Room's texture file path.
-    pub texture: Option<String>,
+    /// The type of Room.
+    pub room_type: Rooms,
 }
 
 impl fmt::Display for Rooms {
@@ -237,17 +105,170 @@ impl fmt::Display for Rooms {
 /// # Examples
 ///
 /// ```
-/// use bevy::prelude::*;
+/// use bevy::{
+///   asset::AssetPlugin,
+///   input::InputPlugin,
+///   prelude::*,
+///   state::app::StatesPlugin,
+/// };
 /// use home_invasion::components::rooms::RoomsPlugin;
 ///
-/// App::new().add_plugins((MinimalPlugins, RoomsPlugin)).update();
+/// App::new()
+///   .add_plugins((
+///     MinimalPlugins,
+///     InputPlugin,
+///     AssetPlugin::default(),
+///     StatesPlugin,
+///     RoomsPlugin,
+///   ))
+///   .update();
 /// ```
 pub struct RoomsPlugin;
 
 impl Plugin for RoomsPlugin {
-    fn build(&self, _app: &mut App) {
-        // app.add_systems(Startup, generate_rooms);
+    fn build(&self, app: &mut App) {
+        app.init_asset::<AnimationGraph>()
+            .init_asset::<AnimationClip>()
+            .init_asset::<WorldAsset>()
+            .insert_state(Rooms::Office(true))
+            .add_systems(Update, open_door.run_if(input_just_pressed(KeyCode::KeyE)))
+            .add_plugins(OfficePlugin);
     }
+}
+
+/// The type of `Wall` applied.
+///
+/// # Examples
+///
+/// ```
+/// use home_invasion::components::rooms::WallType;
+///
+/// let wall_type = WallType::Standard;
+///
+/// match wall_type {
+///   WallType::Standard => println!("Standard"),
+///   WallType::Corner => println!("Corner"),
+///   WallType::Door => println!("Door"),
+/// }
+/// ````
+pub enum WallType {
+    /// The standard `Wall` type.
+    Standard,
+    /// The `Wall` type of corners.
+    Corner,
+    /// The `Wall` type of `Doors`.
+    Door,
+}
+
+/// A segment of a `Wall` (north, east, south, west).
+///
+/// # Examples
+///
+/// ```
+/// use std::f32::consts::PI;
+/// use bevy::prelude::*;
+/// use home_invasion::components::rooms::{WallSegment, WallType};
+///
+/// let wall_type = WallType::Standard;
+/// let pos = Vec3::ZERO;
+///
+/// let wall_segment = WallSegment {
+///   transform: Transform::from_translation(pos)
+///     .with_rotation(Quat::from_rotation_y(PI / 2.0)),
+///   wall_type,
+/// };
+/// ```
+pub struct WallSegment {
+    /// The positional transformation of the `Wall`.
+    pub transform: Transform,
+    /// The [type of Wall](WallType).
+    pub wall_type: WallType,
+}
+
+/// The specifications of the props such as the bookshelfs and tables.
+///
+/// # Examples
+///
+/// ```
+/// use std::f32::consts::PI;
+/// use bevy::prelude::*;
+/// use home_invasion::components::rooms::PropSpec;
+///
+/// let mut props = vec![PropSpec {
+///   asset_path: "models/Office_Table.glb".into(),
+///   transform: Transform::from_translation(Vec3::new(5.0, 0.0, -0.5))
+///     .with_rotation(Quat::from_rotation_y(PI)),
+///   texture_path: None,
+/// }];
+/// ```
+#[derive(Clone)]
+pub struct PropSpec {
+    /// The path of the asset.
+    pub asset_path: String,
+    /// The prop's positional transformation.
+    pub transform: Transform,
+    /// The optional path of the prop's texture.
+    pub texture_path: Option<String>,
+}
+
+/// The configuration of a `Room`.
+///
+/// # Examples
+///
+/// ```
+/// use std::f32::consts::PI;
+/// use bevy::prelude::*;
+/// use home_invasion::components::rooms::{PropSpec, RoomConfig};
+///
+/// let mut props = vec![PropSpec {
+///   asset_path: "models/Office_Table.glb".into(),
+///   transform: Transform::from_translation(Vec3::new(5.0, 0.0, -0.5))
+///     .with_rotation(Quat::from_rotation_y(PI)),
+///   texture_path: None,
+/// }];
+///
+/// let config = RoomConfig {
+///   name: "Office".into(),
+///   half_width: 16.0,
+///   half_depth: 8.0,
+///   step: 8.0,
+///   wall_asset: "models/Wall_office.glb".into(),
+///   corner_asset: "models/Wall_corner_1_office.glb".into(),
+///   door_asset: "models/Wall_office_door.glb".into(),
+///   door_indices: vec![1, 5],
+///   props,
+/// };
+/// ```
+#[derive(Clone)]
+pub struct RoomConfig {
+    /// The name of the `Room`.
+    pub name: String,
+    /// The half width of the `Room`.
+    pub half_width: f32,
+    /// The half depth of the `Room`.
+    pub half_depth: f32,
+    /// The physical width of a single [`WallSegment`].
+    pub step: f32,
+    /// The asset path of the `Wall`.
+    pub wall_asset: String,
+    /// The asset path of the corners.
+    pub corner_asset: String,
+    /// The asset path of the `Doors`.
+    pub door_asset: String,
+    /// A [Vec] specifying which `Wall` positions around the `Room's` perimeter should be
+    /// spawned as doors.
+    pub door_indices: Vec<usize>,
+    /// The `Room's` props.
+    pub props: Vec<PropSpec>,
+}
+
+/// Structure containing the door animation handler and the mapped door nodes for the [Handle].
+#[derive(Component, Clone)]
+pub struct DoorAnimation {
+    /// The `Doors'` animation handler.
+    pub handle: Handle<AnimationGraph>,
+    /// Maps all door sub-components into their specific node ID inside the [`AnimationGraph`].
+    pub node_indices: HashMap<String, AnimationNodeIndex>,
 }
 
 /// Generate rooms based on the given parameters.
@@ -255,345 +276,404 @@ impl Plugin for RoomsPlugin {
 /// # Examples
 ///
 /// ```
-/// use home_invasion::components::rooms::generate_rooms;
+/// use std::f32::consts::PI;
+/// use bevy::prelude::*;
+/// use home_invasion::components::rooms::{PropSpec, RoomConfig, generate_rooms};
 ///
-/// let room = generate_rooms(16.0, 32.0, 16.0);
+/// let mut props = vec![PropSpec {
+///   asset_path: "models/Office_Table.glb".into(),
+///   transform: Transform::from_translation(Vec3::new(5.0, 0.0, -0.5))
+///     .with_rotation(Quat::from_rotation_y(PI)),
+///   texture_path: None,
+/// }];
+///
+/// let config = RoomConfig {
+///   name: "Office".into(),
+///   half_width: 16.0,
+///   half_depth: 8.0,
+///   step: 8.0,
+///   wall_asset: "models/Wall_office.glb".into(),
+///   corner_asset: "models/Wall_corner_1_office.glb".into(),
+///   door_asset: "models/Wall_office_door.glb".into(),
+///   door_indices: vec![1, 5],
+///   props,
+/// };
+/// let room = generate_rooms(&config);
 /// ```
 #[must_use]
-pub fn generate_rooms(half_width: f32, half_depth: f32, step: f32) -> Vec<Vec3> {
+pub fn generate_rooms(config: &RoomConfig) -> Vec<WallSegment> {
     let mut positions = Vec::new();
+    let (hw, hd, step) = (config.half_width, config.half_depth, config.step);
+    let mut curr_idx = 0;
+
+    let mut add_wall = |pos: Vec3, rot_y: f32, is_corner: bool| {
+        let wall_type = if config.door_indices.contains(&curr_idx) {
+            WallType::Door
+        } else if is_corner {
+            WallType::Corner
+        } else {
+            WallType::Standard
+        };
+
+        positions.push(WallSegment {
+            transform: Transform::from_translation(pos).with_rotation(Quat::from_rotation_y(rot_y)),
+            wall_type,
+        });
+        curr_idx += 1;
+    };
 
     // West wall
-    let mut z = -half_depth;
-    while z <= half_depth {
-        positions.push(Vec3::new(-half_width, 0.0, z));
+    let mut z = -hd;
+    while z <= hd {
+        let is_southwest_corner = (z - -hd).abs() < ERROR_MARGIN;
+        let is_northwest_corner = (z - hd).abs() < ERROR_MARGIN;
+        let is_corner = is_southwest_corner || is_northwest_corner;
+
+        let rot = if is_southwest_corner {
+            0.0
+        } else if is_northwest_corner {
+            PI / 2.0
+        } else {
+            0.0
+        };
+
+        add_wall(Vec3::new(-hw, 0.0, z), rot, is_corner);
         z += step;
     }
 
     // North wall
-    let mut x = -half_width + step;
-    while x <= half_width {
-        positions.push(Vec3::new(x, 0.0, half_depth));
+    let mut x = -hw + step;
+    while x <= hw {
+        let is_northeast_corner = (x - hw).abs() < ERROR_MARGIN;
+
+        let rot = if is_northeast_corner { PI } else { -PI / 2.0 };
+
+        add_wall(Vec3::new(x, 0.0, hd), rot, is_northeast_corner);
         x += step;
     }
 
     // East wall
-    z = half_depth - step;
-    while z >= -half_depth {
-        positions.push(Vec3::new(half_width, 0.0, z));
+    z = hd - step;
+    while z >= -hd {
+        let is_southeast_corner = (z - -hd).abs() < ERROR_MARGIN;
+
+        let rot = if is_southeast_corner { -PI / 2.0 } else { 0.0 };
+
+        add_wall(Vec3::new(hw, 0.0, z), rot, is_southeast_corner);
         z -= step;
     }
 
     // South wall
-    x = half_width - step;
-    while x > -half_width {
-        positions.push(Vec3::new(x, 0.0, -half_depth));
+    x = hw - step;
+    while x > -hw {
+        add_wall(Vec3::new(x, 0.0, -hd), PI / 2.0, false);
         x -= step;
     }
 
     positions
 }
 
-/// This module defines the Office.
-pub mod office {
-    use std::{collections::HashMap, f32::consts::PI};
+/// A function spawning a `Room` with all its props, `Walls`, `Doors` and all the `Doors'` animations.
+///
+/// # Examples
+///
+/// ```
+/// use std::f32::consts::PI;
+/// use bevy::{input::InputPlugin, prelude::*, state::app::StatesPlugin};
+/// use home_invasion::components::rooms::{PropSpec, RoomConfig, Rooms, spawn_room};
+///
+/// fn setup(
+///   mut cmds: Commands,
+///   asset_server: Res<AssetServer>,
+///   mut graphs: ResMut<Assets<AnimationGraph>>,
+/// ) {
+///   let mut props = vec![PropSpec {
+///     asset_path: "models/Office_Table.glb".into(),
+///     transform: Transform::from_translation(Vec3::new(5.0, 0.0, -0.5))
+///       .with_rotation(Quat::from_rotation_y(PI)),
+///     texture_path: None,
+///   }];
+///
+///   let office_config = RoomConfig {
+///     name: "Office".into(),
+///     half_width: 16.0,
+///     half_depth: 8.0,
+///     step: 8.0,
+///     wall_asset: "models/Wall_office.glb".into(),
+///     corner_asset: "models/Wall_corner_1_office.glb".into(),
+///     door_asset: "models/Wall_office_door.glb".into(),
+///     door_indices: vec![1, 5],
+///     props,
+///   };
+///   spawn_room(
+///     &mut cmds,
+///     &asset_server,
+///     &mut graphs,
+///     &office_config,
+///     Rooms::Office(true),
+///   );
+/// }
+/// App::new()
+///   .add_plugins((
+///     MinimalPlugins,
+///     InputPlugin,
+///     AssetPlugin::default(),
+///     StatesPlugin,
+///   ))
+///   .init_asset::<AnimationGraph>()
+///   .init_asset::<AnimationClip>()
+///   .init_asset::<WorldAsset>()
+///   .add_systems(Startup, setup)
+///   .update();
+/// ```
+pub fn spawn_room(
+    cmds: &mut Commands,
+    asset_server: &Res<AssetServer>,
+    graphs: &mut ResMut<Assets<AnimationGraph>>,
+    config: &RoomConfig,
+    room_type: Rooms,
+) {
+    let layout = generate_rooms(config);
 
-    use crate::components::rooms::{Door, Wall};
+    cmds.spawn((
+        Room { room_type },
+        Transform::default(),
+        Visibility::default(),
+        Wall,
+    ))
+    .with_children(|parent| {
+        for position in layout {
+            let is_door = matches!(position.wall_type, WallType::Door);
+            let asset_path = match position.wall_type {
+                WallType::Standard => &config.wall_asset,
+                WallType::Corner => &config.corner_asset,
+                WallType::Door => &config.door_asset,
+            };
 
-    use super::{Rooms, generate_rooms};
-    use bevy::{
-        animation::{AnimationPlayer, graph::AnimationGraph},
-        color::palettes::css::WHITE,
-        ecs::event::Trigger,
-        gltf::{GltfExtras, GltfMaterialExtras, GltfMaterialName, GltfMeshExtras, GltfSceneExtras},
-        input::common_conditions::input_just_pressed,
-        prelude::*,
-        world_serialization::WorldInstanceReady,
+            let mut entity = parent.spawn((
+                WorldAssetRoot(
+                    asset_server.load(GltfAssetLabel::Scene(0).from_asset(asset_path.clone())),
+                ),
+                position.transform.with_scale(SCALE),
+            ));
+
+            if is_door {
+                entity.insert(Door);
+
+                let mut graph = AnimationGraph::new();
+                let mut indices = HashMap::new();
+
+                for (i, name) in ["Door", "Door_Handles", "Door_inner_glass"]
+                    .iter()
+                    .enumerate()
+                {
+                    let clip = asset_server
+                        .load(GltfAssetLabel::Animation(i).from_asset(asset_path.clone()));
+                    let idx = graph.add_clip(clip, 1.0, graph.root);
+                    indices.insert((*name).to_string(), idx);
+                }
+
+                let graph_handle = graphs.add(graph);
+                entity.insert(DoorAnimation {
+                    handle: graph_handle,
+                    node_indices: indices,
+                });
+                entity.observe(door_animation_ready);
+            }
+        }
+
+        for prop in &config.props {
+            let mut entity = parent.spawn((
+                WorldAssetRoot(
+                    asset_server.load(GltfAssetLabel::Scene(0).from_asset(prop.asset_path.clone())),
+                ),
+                prop.transform.with_scale(SCALE),
+            ));
+
+            if prop.texture_path.is_some() {
+                entity.observe(apply_bookshelf_texture);
+            }
+        }
+    });
+}
+
+/// Plugin for all the systems associated with the [`Rooms::Office`].
+///
+/// # Examples
+/// Loads and spawns the needed x.blend files.
+/// ```
+/// use bevy::{
+///   asset::AssetPlugin,
+///   animation::AnimationClip,
+///   input::InputPlugin,
+///   prelude::*,
+///   state::app::StatesPlugin,
+///   world_serialization::WorldAsset,
+/// };
+/// use home_invasion::components::rooms::OfficePlugin;
+///
+/// App::new()
+///   .add_plugins((
+///     MinimalPlugins,
+///     InputPlugin,
+///     AssetPlugin::default(),
+///     StatesPlugin,
+///     OfficePlugin
+///   ))
+///   .init_asset::<AnimationGraph>()
+///   .init_asset::<AnimationClip>()
+///   .init_asset::<WorldAsset>()
+///   .update();
+/// ```
+pub struct OfficePlugin;
+
+impl Plugin for OfficePlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(Startup, setup_office);
+    }
+}
+
+fn setup_office(
+    mut cmds: Commands,
+    asset_server: Res<AssetServer>,
+    mut graphs: ResMut<Assets<AnimationGraph>>,
+) {
+    let bookshelf_z = [-6.0, -3.0, 0.0, 3.0, 6.0];
+    let mut props = vec![PropSpec {
+        asset_path: "models/Office_Table.glb".into(),
+        transform: Transform::from_translation(Vec3::new(5.0, 0.0, -0.5))
+            .with_rotation(Quat::from_rotation_y(PI)),
+        texture_path: None,
+    }];
+
+    for z in bookshelf_z {
+        props.push(PropSpec {
+            asset_path: "models/Office_Bookshelf.glb".into(),
+            transform: Transform::from_translation(Vec3::new(15.0, 0.0, z))
+                .with_rotation(Quat::from_rotation_y(PI / 2.0)),
+            texture_path: Some("textures/Dark_Wood_texture.png".into()),
+        });
+    }
+    let office_config = RoomConfig {
+        name: "Office".into(),
+        half_width: 16.0,
+        half_depth: 8.0,
+        step: 8.0,
+        wall_asset: "models/Wall_office.glb".into(),
+        corner_asset: "models/Wall_corner_1_office.glb".into(),
+        door_asset: "models/Wall_office_door.glb".into(),
+        door_indices: vec![1, 5],
+        props,
+    };
+    spawn_room(
+        &mut cmds,
+        &asset_server,
+        &mut graphs,
+        &office_config,
+        Rooms::Office(true),
+    );
+}
+
+#[derive(Component)]
+struct Bookshelf;
+
+fn apply_bookshelf_texture(
+    scene_ready: On<WorldInstanceReady>,
+    mut cmds: Commands,
+    asset_server: Res<AssetServer>,
+    children: Query<&Children>,
+    bookshelf_query: Query<&Bookshelf>,
+    mesh_materials: Query<(&MeshMaterial3d<StandardMaterial>, &GltfMaterialName)>,
+    mut standard_mat: ResMut<Assets<StandardMaterial>>,
+) {
+    let Ok(_bookshelf_query) = bookshelf_query.get(scene_ready.entity) else {
+        return;
     };
 
-    const SCALE: Vec3 = Vec3::new(4.0, 4.0, 4.0);
-
-    /// Plugin for all the systems associated with the [`Rooms::Office`].
-    ///
-    /// # Examples
-    /// Loads and spawns the needed x.blend files.
-    /// ```no_run
-    /// use bevy::prelude::*;
-    /// use home_invasion::components::rooms::office::OfficePlugin;
-    ///
-    /// App::new().add_plugins((MinimalPlugins, OfficePlugin)).update();
-    /// ```
-    pub struct OfficePlugin;
-
-    impl Plugin for OfficePlugin {
-        fn build(&self, app: &mut App) {
-            app.add_systems(
-                Startup,
-                (setup_office, spawn_bookshelf, spawn_table, setup_animation),
-            )
-            .add_systems(Update, open_door.run_if(input_just_pressed(KeyCode::KeyE)));
-        }
-    }
-
-    fn setup_office(mut cmds: Commands, asset_server: Res<AssetServer>) {
-        let positions = generate_rooms(16.0, 8.0, 8.0);
-
-        let assets: [String; 2] = [
-            String::from("Wall_office"),
-            String::from("Wall_corner_1_office"),
-        ];
-
-        let walls = [1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0]
-            .iter()
-            .map(|i| assets[*i].clone())
-            .collect::<Vec<String>>();
-
-        let len = positions.len();
-
-        for idx in 0..len {
-            let curr_pos = positions[idx];
-
-            let mut transform =
-                Transform::from_translation(Vec3::new(curr_pos[0], curr_pos[1], curr_pos[2]));
-
-            match idx {
-                1 | 5 => continue,
-                2..=4 => transform.rotate_local_y(PI / 2.0),
-                6 | 7 => transform.rotate_local_y(PI),
-                8..=11 => transform.rotate_local_y(-PI / 2.0),
-                _ => {}
-            }
-
-            let wall = Wall::new(transform.translation, None);
-
-            cmds.spawn((
-                WorldAssetRoot(asset_server.load(
-                    GltfAssetLabel::Scene(0).from_asset(format!("models/{:}.glb", walls[idx])),
-                )),
-                transform.with_scale(SCALE),
-                wall,
-            ));
-        }
-    }
-
-    #[derive(Component)]
-    struct Bookshelf;
-
-    fn spawn_bookshelf(
-        mut cmds: Commands,
-        asset_server: Res<AssetServer>,
-        mut materials: ResMut<Assets<StandardMaterial>>,
-    ) {
-        let bookshelf_pos = [-6.0, -3.0, 0.0, 3.0, 6.0];
-
-        for pos in &bookshelf_pos {
-            let mut transform = Transform::from_translation(Vec3::new(15.0, 0.0, *pos));
-            transform.rotate_local_y(PI / 2.0);
-            cmds.spawn((
-                WorldAssetRoot(
-                    asset_server
-                        .load(GltfAssetLabel::Scene(0).from_asset("models/Office_Bookshelf.glb")),
-                ),
-                MeshMaterial3d(materials.add(StandardMaterial {
-                    base_color: Color::from(WHITE),
-                    unlit: true,
-                    ..default()
-                })),
-                transform.with_scale(SCALE),
-                Bookshelf,
-            ))
-            .observe(apply_bookshelf_texture);
-        }
-    }
-
-    fn apply_bookshelf_texture(
-        scene_ready: On<WorldInstanceReady>,
-        mut cmds: Commands,
-        asset_server: Res<AssetServer>,
-        children: Query<&Children>,
-        bookshelf_query: Query<&Bookshelf>,
-        mesh_materials: Query<(&MeshMaterial3d<StandardMaterial>, &GltfMaterialName)>,
-        mut standard_mat: ResMut<Assets<StandardMaterial>>,
-    ) {
-        let Ok(_bookshelf_query) = bookshelf_query.get(scene_ready.entity) else {
-            return;
+    for descendant in children.iter_descendants(scene_ready.entity) {
+        let Ok((_id, material_name)) = mesh_materials.get(descendant) else {
+            continue;
         };
 
-        for descendant in children.iter_descendants(scene_ready.entity) {
-            let Ok((_id, material_name)) = mesh_materials.get(descendant) else {
-                continue;
-            };
+        let texture: Handle<Image> = asset_server.load("textures/Dark_Wood_texture.png");
+        let material: Handle<StandardMaterial> = standard_mat.add(StandardMaterial {
+            base_color_texture: Some(texture),
+            ..default()
+        });
 
-            let texture: Handle<Image> = asset_server.load("textures/Dark_Wood_texture.png");
-            let material: Handle<StandardMaterial> = standard_mat.add(StandardMaterial {
-                base_color_texture: Some(texture),
-                ..default()
-            });
-
-            match material_name.0.as_str() {
-                "Wooden" => {
-                    cmds.entity(descendant)
-                        .insert(MeshMaterial3d(material.clone()));
-                }
-                name => info!("Not replacing: {name}"),
-            }
+        if &material_name.0 == "Wooden" {
+            cmds.entity(descendant)
+                .insert(MeshMaterial3d(material.clone()));
         }
     }
+}
 
-    fn spawn_table(
-        mut cmds: Commands,
-        asset_server: Res<AssetServer>,
-        mut materials: ResMut<Assets<StandardMaterial>>,
-    ) {
-        let bookshelf_pos = Vec3::new(5.0, 0.0, -0.5);
+fn door_animation_ready(
+    scene_ready: On<WorldInstanceReady>,
+    mut cmds: Commands,
+    children: Query<&Children>,
+    animations: Query<&DoorAnimation>,
+    players: Query<&AnimationPlayer>,
+) {
+    let Ok(animation_data) = animations.get(scene_ready.entity) else {
+        return;
+    };
 
-        let mut transform = Transform::from_translation(bookshelf_pos);
-        transform.rotate_local_y(PI);
-        cmds.spawn((
-            WorldAssetRoot(
-                asset_server.load(GltfAssetLabel::Scene(0).from_asset("models/Office_Table.glb")),
-            ),
-            MeshMaterial3d(materials.add(StandardMaterial {
-                base_color: Color::from(WHITE),
-                unlit: true,
-                ..default()
-            })),
-            transform.with_scale(SCALE),
-            Bookshelf,
-        ));
+    for child in children.iter_descendants(scene_ready.entity) {
+        if players.get(child).is_ok() {
+            cmds.entity(child)
+                .insert(AnimationGraphHandle(animation_data.handle.clone()))
+                .insert(animation_data.clone());
+        }
     }
+}
 
-    #[derive(Component, Clone)]
-    struct Animations {
-        handle: Handle<AnimationGraph>,
-        index: HashMap<String, AnimationNodeIndex>,
-    }
+fn open_door(
+    mut door_query: Query<(&GlobalTransform, &mut AnimationPlayer, &DoorAnimation)>,
+    cam_query: Single<(&Camera3d, &GlobalTransform)>,
+) {
+    let (_cam, cam_transform) = cam_query.into_inner();
 
-    fn setup_animation(
-        mut cmds: Commands,
-        asset_server: Res<AssetServer>,
-        mut graphs: ResMut<Assets<AnimationGraph>>,
-    ) {
-        let door_path = "models/Wall_office_door.glb";
-
-        let mut graph = AnimationGraph::new();
-        let mut hash = HashMap::new();
-
-        for (i, name) in ["Door", "Door_Handles", "Door_inner_glas"]
-            .iter()
-            .enumerate()
-        {
-            let clip = asset_server.load(GltfAssetLabel::Animation(i).from_asset(door_path));
-            let idx = graph.add_clip(clip, 1.0, graph.root);
-            hash.insert(name.to_string(), idx);
+    for (door_transform, mut player, animations) in &mut door_query {
+        let cam_distance = cam_transform
+            .translation()
+            .distance(door_transform.translation());
+        if cam_distance > 10.0 {
+            continue;
         }
 
-        let graph_handle = graphs.add(graph);
-
-        let animations = Animations {
-            handle: graph_handle,
-            index: hash,
+        let Some(&door_idx) = animations.node_indices.get("Door") else {
+            continue;
         };
 
-        let scene = WorldAssetRoot(
-            asset_server.load(GltfAssetLabel::Scene(0).from_asset("models/Wall_office_door.glb")),
-        );
+        play_animation(door_idx, &mut player, animations);
+    }
+}
 
-        let pos = generate_rooms(16.0, 8.0, 8.0);
-
-        for i in &[1, 5] {
-            let curr_pos = pos[*i];
-            let mut transform = Transform::from_xyz(curr_pos.x, curr_pos.y, curr_pos.z);
-            if *i == 5 {
-                transform.rotate_local_y(PI / 2.0);
-            }
-
-            let door = Door::new(transform.translation, None);
-
-            cmds.spawn((
-                scene.clone(),
-                animations.clone(),
-                transform.with_scale(SCALE),
-                door,
-            ))
-            .observe(door_animation_ready);
+fn play_animation(
+    door_idx: AnimationNodeIndex,
+    player: &mut AnimationPlayer,
+    animations: &DoorAnimation,
+) {
+    if let Some(action) = player.animation(door_idx)
+        && action.is_finished()
+    {
+        player.play(door_idx).replay();
+        if let Some(&handle_idx) = animations.node_indices.get("Door_Handles") {
+            player.play(handle_idx).replay();
         }
+        return;
     }
 
-    fn door_animation_ready(
-        scene_ready: On<WorldInstanceReady>,
-        mut cmds: Commands,
-        children: Query<&Children>,
-        animations: Query<&Animations>,
-        players: Query<&AnimationPlayer>,
-    ) {
-        let Ok(animations) = animations.get(scene_ready.entity) else {
-            return;
-        };
-
-        for child in children.iter_descendants(scene_ready.entity) {
-            if players.get(child).is_ok() {
-                cmds.entity(child)
-                    .insert(AnimationGraphHandle(animations.handle.clone()))
-                    .insert(animations.clone());
-            }
-        }
-    }
-
-    fn open_door(
-        mut door_query: Query<(Entity, &GlobalTransform, &mut AnimationPlayer, &Animations)>,
-        cam_query: Single<(&Camera3d, &GlobalTransform)>,
-    ) {
-        let (_cam, cam_transform) = cam_query.into_inner();
-
-        for (_door_entity, door_transform, mut player, animations) in &mut door_query.iter_mut() {
-            let cam_distance = cam_transform
-                .translation()
-                .distance(door_transform.translation());
-            if cam_distance > 10.0 {
-                info!("CAM TOO FAR AWAY FROM DOOR: {:}", cam_distance);
-                continue;
-            }
-
-            let Some(&door_idx) = animations.index.get("Door") else {
-                continue;
-            };
-
-            play_animation(door_idx, &mut player, animations);
-        }
-    }
-
-    fn play_animation(
-        door_idx: AnimationNodeIndex,
-        player: &mut AnimationPlayer,
-        animations: &Animations,
-    ) {
-        if let Some(action) = &mut player.animation(door_idx) {
-            if action.is_finished() {
-                info!("Replaying door animation..");
-                player.play(door_idx).replay();
-
-                if let Some(&handle_idx) = animations.index.get("Door_Handles") {
-                    player.play(handle_idx).replay();
-                }
-            }
-        } else {
-            info!("Is currently Playing");
-        }
-
-        player.play(door_idx);
-
-        if let Some(&handle_idx) = animations.index.get("Door_Handles") {
-            player.play(handle_idx);
-        }
+    player.play(door_idx);
+    if let Some(&handle_idx) = animations.node_indices.get("Door_Handles") {
+        player.play(handle_idx);
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    const ERROR_MARGIN: f32 = 0.1;
 
     #[test]
     fn test_rooms_fmt() {
@@ -613,20 +693,16 @@ mod tests {
     }
 
     #[test]
-    fn test_wall_generation() {
-        let wall = Wall::new(Vec3::ZERO, Some("/assets/textures/test_wall1.jpg".into()));
-
-        assert!((wall.height - WALL_HEIGHT) < ERROR_MARGIN);
-        assert!((wall.width - 10.0) < ERROR_MARGIN);
-        assert!((wall.depth - 2.0) < ERROR_MARGIN);
-        assert_eq!(wall.pos, Vec3::ZERO);
-    }
-
-    #[test]
     fn test_rooms_plugin_build() {
         let mut app = App::new();
-        app.add_plugins((MinimalPlugins, RoomsPlugin));
-        app.update();
+        app.add_plugins((
+            MinimalPlugins,
+            InputPlugin,
+            AssetPlugin::default(),
+            StatesPlugin,
+            RoomsPlugin,
+        ))
+        .update();
         assert!(app.is_plugin_added::<RoomsPlugin>());
     }
 }

@@ -4,6 +4,7 @@ use bevy::{
     image::{ImageAddressMode, ImageLoaderSettings, ImageSampler, ImageSamplerDescriptor},
     math::Affine2,
     prelude::*,
+    state::app::StatesPlugin,
 };
 use bevy_rapier3d::prelude::Collider;
 
@@ -14,13 +15,23 @@ use crate::components::rooms::RoomsPlugin;
 /// # Examples
 ///
 /// ```
-/// use bevy::prelude::*;
-/// use bevy::asset::AssetPlugin;
-/// use bevy::image::Image;
+/// use bevy::{
+///   asset::AssetPlugin,
+///   image::Image,
+///   input::InputPlugin,
+///   prelude::*,
+///   state::app::StatesPlugin
+/// };
 /// use home_invasion::components::house::HousePlugin;
 ///
 /// App::new()
-///     .add_plugins((MinimalPlugins, AssetPlugin::default(), HousePlugin))
+///     .add_plugins((
+///       MinimalPlugins,
+///       InputPlugin,
+///       AssetPlugin::default(),
+///       StatesPlugin,
+///       HousePlugin
+///     ))
 ///     .init_asset::<WorldAsset>()
 ///     .init_asset::<Mesh>()
 ///     .init_asset::<StandardMaterial>()
@@ -81,18 +92,26 @@ fn setup_floor(
 
 #[cfg(test)]
 mod tests {
+    use bevy::input::InputPlugin;
+
     use super::*;
 
     #[test]
     fn test_house_plugin_build() {
         let mut app = App::new();
 
-        app.add_plugins((MinimalPlugins, AssetPlugin::default(), HousePlugin))
-            .init_asset::<WorldAsset>()
-            .init_asset::<Mesh>()
-            .init_asset::<StandardMaterial>()
-            .init_asset::<Image>()
-            .update();
+        app.add_plugins((
+            MinimalPlugins,
+            InputPlugin,
+            AssetPlugin::default(),
+            StatesPlugin,
+            HousePlugin,
+        ))
+        .init_asset::<WorldAsset>()
+        .init_asset::<Mesh>()
+        .init_asset::<StandardMaterial>()
+        .init_asset::<Image>()
+        .update();
 
         assert!(app.is_plugin_added::<AssetPlugin>());
         assert!(app.is_plugin_added::<HousePlugin>());

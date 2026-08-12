@@ -6,17 +6,25 @@
 //! ## Examples
 //!
 //! ```
-//! use bevy::prelude::*;
+//! use bevy::{
+//!   asset::AssetPlugin,
+//!   input::InputPlugin,
+//!   prelude::*,
+//!   state::app::StatesPlugin
+//! };
 //! use bevy_camera_controller::free_camera::FreeCameraPlugin;
 //! use home_invasion::components::{cam::CamPlugin, house::HousePlugin};
 //!
 //! fn main() {
 //!     App::new()
 //!         .add_plugins((
-//!             (
-//!                 (MinimalPlugins, FreeCameraPlugin),
-//!                 (CamPlugin, HousePlugin)
-//!             )
+//!                 MinimalPlugins,
+//!                 InputPlugin,
+//!                 AssetPlugin::default(),
+//!                 StatesPlugin,
+//!                 FreeCameraPlugin,
+//!                 CamPlugin,
+//!                 HousePlugin
 //!         ));
 //! }
 //! ```
