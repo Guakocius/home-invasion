@@ -10,7 +10,10 @@ use bevy::{
     state::app::StatesPlugin,
     world_serialization::WorldInstanceReady,
 };
-use std::{f32::consts::PI, fmt};
+use std::{
+    f32::consts::{FRAC_PI_2, PI},
+    fmt,
+};
 
 use super::animations::{DoorAnimation, door_animation_ready};
 
@@ -165,7 +168,7 @@ pub enum WallType {
 /// # Examples
 ///
 /// ```
-/// use std::f32::consts::PI;
+/// use std::f32::consts::FRAC_PI_2;
 /// use bevy::prelude::*;
 /// use home_invasion::components::rooms::{WallSegment, WallType};
 ///
@@ -174,7 +177,7 @@ pub enum WallType {
 ///
 /// let wall_segment = WallSegment {
 ///   transform: Transform::from_translation(pos)
-///     .with_rotation(Quat::from_rotation_y(PI / 2.0)),
+///     .with_rotation(Quat::from_rotation_y(FRAC_PI_2)),
 ///   wall_type,
 /// };
 /// ```
@@ -323,7 +326,7 @@ pub fn generate_rooms(config: &RoomConfig) -> Vec<WallSegment> {
         let rot = if is_southwest_corner {
             0.0
         } else if is_northwest_corner {
-            PI / 2.0
+            FRAC_PI_2
         } else {
             0.0
         };
@@ -337,7 +340,7 @@ pub fn generate_rooms(config: &RoomConfig) -> Vec<WallSegment> {
     while x <= hw {
         let is_northeast_corner = (x - hw).abs() < ERROR_MARGIN;
 
-        let rot = if is_northeast_corner { PI } else { -PI / 2.0 };
+        let rot = if is_northeast_corner { PI } else { -FRAC_PI_2 };
 
         add_wall(Vec3::new(x, 0.0, hd), rot, is_northeast_corner);
         x += step;
@@ -348,7 +351,7 @@ pub fn generate_rooms(config: &RoomConfig) -> Vec<WallSegment> {
     while z >= -hd {
         let is_southeast_corner = (z - -hd).abs() < ERROR_MARGIN;
 
-        let rot = if is_southeast_corner { -PI / 2.0 } else { 0.0 };
+        let rot = if is_southeast_corner { -FRAC_PI_2 } else { 0.0 };
 
         add_wall(Vec3::new(hw, 0.0, z), rot, is_southeast_corner);
         z -= step;
@@ -357,7 +360,7 @@ pub fn generate_rooms(config: &RoomConfig) -> Vec<WallSegment> {
     // South wall
     x = hw - step;
     while x > -hw {
-        add_wall(Vec3::new(x, 0.0, -hd), PI / 2.0, false);
+        add_wall(Vec3::new(x, 0.0, -hd), FRAC_PI_2, false);
         x -= step;
     }
 
@@ -386,7 +389,7 @@ pub fn generate_rooms(config: &RoomConfig) -> Vec<WallSegment> {
 ///   }];
 ///
 ///   let office_config = RoomConfig {
-///     name: "Office".into(),
+///     name: "HomeOffice".into(),
 ///     half_width: 16.0,
 ///     half_depth: 8.0,
 ///     step: 8.0,
@@ -401,7 +404,7 @@ pub fn generate_rooms(config: &RoomConfig) -> Vec<WallSegment> {
 ///     &asset_server,
 ///     &mut graphs,
 ///     &office_config,
-///     Rooms::Office(true),
+///     Rooms::HomeOffice(true),
 ///   );
 /// }
 /// App::new()
@@ -488,7 +491,7 @@ pub fn spawn_room(
     });
 }
 
-/// Plugin for all the systems associated with the [`Rooms::Office`].
+/// Plugin for all the systems associated with the [`Rooms::HomeOffice`].
 ///
 /// # Examples
 /// Loads and spawns the needed x.blend files.
@@ -501,7 +504,7 @@ pub fn spawn_room(
 ///   state::app::StatesPlugin,
 ///   world_serialization::WorldAsset,
 /// };
-/// use home_invasion::components::rooms::OfficePlugin;
+/// use home_invasion::components::rooms::HomeOfficePlugin;
 ///
 /// App::new()
 ///   .add_plugins((
@@ -509,7 +512,7 @@ pub fn spawn_room(
 ///     InputPlugin,
 ///     AssetPlugin::default(),
 ///     StatesPlugin,
-///     OfficePlugin
+///     HomeOfficePlugin
 ///   ))
 ///   .init_asset::<AnimationGraph>()
 ///   .init_asset::<AnimationClip>()
@@ -541,7 +544,7 @@ fn setup_home_office(
         props.push(PropSpec {
             asset_path: "models/HomeOffice_Bookshelf.glb".into(),
             transform: Transform::from_translation(Vec3::new(15.0, 0.0, z))
-                .with_rotation(Quat::from_rotation_y(PI / 2.0)),
+                .with_rotation(Quat::from_rotation_y(FRAC_PI_2)),
             texture_path: Some("textures/Dark_Wood_texture.png".into()),
         });
     }
@@ -561,7 +564,7 @@ fn setup_home_office(
         &asset_server,
         &mut graphs,
         &office_config,
-        Rooms::Office(true),
+        Rooms::HomeOffice(true),
     );
 }
 
