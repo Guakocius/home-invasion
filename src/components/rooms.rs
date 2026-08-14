@@ -132,7 +132,7 @@ impl Plugin for RoomsPlugin {
             .init_asset::<AnimationClip>()
             .init_asset::<WorldAsset>()
             .insert_state(Rooms::Office(true))
-            .add_plugins(OfficePlugin);
+            .add_plugins(HomeOfficePlugin);
     }
 }
 
@@ -516,22 +516,22 @@ pub fn spawn_room(
 ///   .init_asset::<WorldAsset>()
 ///   .update();
 /// ```
-pub struct OfficePlugin;
+pub struct HomeOfficePlugin;
 
-impl Plugin for OfficePlugin {
+impl Plugin for HomeOfficePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, setup_office);
+        app.add_systems(Startup, setup_home_office);
     }
 }
 
-fn setup_office(
+fn setup_home_office(
     mut cmds: Commands,
     asset_server: Res<AssetServer>,
     mut graphs: ResMut<Assets<AnimationGraph>>,
 ) {
     let bookshelf_z = [-6.0, -3.0, 0.0, 3.0, 6.0];
     let mut props = vec![PropSpec {
-        asset_path: "models/Office_Table.glb".into(),
+        asset_path: "models/HomeOffice_Table.glb".into(),
         transform: Transform::from_translation(Vec3::new(5.0, 0.0, -0.5))
             .with_rotation(Quat::from_rotation_y(PI)),
         texture_path: None,
@@ -539,14 +539,14 @@ fn setup_office(
 
     for z in bookshelf_z {
         props.push(PropSpec {
-            asset_path: "models/Office_Bookshelf.glb".into(),
+            asset_path: "models/HomeOffice_Bookshelf.glb".into(),
             transform: Transform::from_translation(Vec3::new(15.0, 0.0, z))
                 .with_rotation(Quat::from_rotation_y(PI / 2.0)),
             texture_path: Some("textures/Dark_Wood_texture.png".into()),
         });
     }
     let office_config = RoomConfig {
-        name: "Office".into(),
+        name: "Home Office".into(),
         half_width: 16.0,
         half_depth: 8.0,
         step: 8.0,
