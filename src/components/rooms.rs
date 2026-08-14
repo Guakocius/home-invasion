@@ -240,6 +240,7 @@ pub struct PropSpec {
 ///   door_asset: "models/Wall_office_door.glb".into(),
 ///   door_indices: vec![1, 5],
 ///   props,
+///   pos: Vec3::ZERO,
 /// };
 /// ```
 #[derive(Clone)]
@@ -263,6 +264,8 @@ pub struct RoomConfig {
     pub door_indices: Vec<usize>,
     /// The `Room's` props.
     pub props: Vec<PropSpec>,
+    /// The `Room's` position in the world.
+    pub pos: Vec3,
 }
 
 /// Generate rooms based on the given parameters.
@@ -291,6 +294,7 @@ pub struct RoomConfig {
 ///   door_asset: "models/Wall_office_door.glb".into(),
 ///   door_indices: vec![1, 5],
 ///   props,
+///   pos: Vec3::ZERO,
 /// };
 /// let room = generate_rooms(&config);
 /// ```
@@ -398,6 +402,7 @@ pub fn generate_rooms(config: &RoomConfig) -> Vec<WallSegment> {
 ///     door_asset: "models/Wall_office_door.glb".into(),
 ///     door_indices: vec![1, 5],
 ///     props,
+///     pos: Vec3::ZERO,
 ///   };
 ///   spawn_room(
 ///     &mut cmds,
@@ -431,7 +436,7 @@ pub fn spawn_room(
 
     cmds.spawn((
         Room { room_type },
-        Transform::default(),
+        Transform::from_translation(config.pos),
         Visibility::default(),
         Wall,
     ))
@@ -558,6 +563,7 @@ fn setup_home_office(
         door_asset: "models/Wall_office_door.glb".into(),
         door_indices: vec![1, 5],
         props,
+        pos: Vec3::new(14.0, 0.0, -22.0),
     };
     spawn_room(
         &mut cmds,

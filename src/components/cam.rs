@@ -32,6 +32,36 @@ impl Plugin for CamPlugin {
     }
 }
 
+/// The Camera Sensitivity. Added for accessibility and configuration reasons.
+///
+/// # Examples
+///
+/// ```
+/// use bevy::{input::InputPlugin, prelude::*};
+/// use home_invasion::components::{
+///     player::Player,
+///     cam::CameraSensitivity
+/// };
+///
+/// fn spawn_camera(mut cmds: Commands) {
+///     cmds.spawn((
+///         Player,
+///         CameraSensitivity::default(),
+///         Transform::from_xyz(0.0, 7.5, 0.0)
+///             .looking_at(vec3(5.0, 7.5, 0.0), Vec3::Y),
+///         Visibility::default(),
+///     ));
+/// }
+///
+/// App::new()
+///     .add_plugins((
+///         MinimalPlugins,
+///         InputPlugin,
+///         AssetPlugin::default(),
+///     ))
+///     .add_systems(Startup, spawn_camera).update();
+///
+/// ```
 #[derive(Debug, Component, Deref, DerefMut)]
 pub struct CameraSensitivity(Vec2);
 
@@ -55,7 +85,7 @@ fn spawn_view_model(mut cmds: Commands) {
     cmds.spawn((
         Player,
         CameraSensitivity::default(),
-        Transform::from_xyz(0.0, 7.5, 0.0).looking_at(vec3(5.0, 7.5, 0.0), Vec3::Y),
+        Transform::from_xyz(25.0, 7.5, -25.0).looking_at(vec3(30.0, 7.5, -30.0), Vec3::Y),
         Visibility::default(),
         children![
             (

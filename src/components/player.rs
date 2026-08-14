@@ -18,38 +18,21 @@ use bevy_camera_controller::free_camera::FreeCamera;
 #[derive(Debug, Component)]
 pub struct Player;
 
-fn setup(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut standard_materials: ResMut<Assets<StandardMaterial>>,
-) {
-    //let mesh = meshes.add(Capsule3d::new(player.radius, player.length / 2.0));
-
-    /*commands.spawn((
-        Mesh3d(mesh),
-        MeshMaterial3d(standard_materials.add(StandardMaterial {
-            base_color: Color::BLACK,
-            ..default()
-        })),
-        Transform::from_translation(player.pos),
-        player,
-    ));
-    commands.insert_resource(player_speed);*/
-}
-
 /// The Plugin for the [Player's](Player) core functionalities.
 ///
 /// # Examples
 ///
 /// ```
-/// use bevy::prelude::*;
+/// use bevy::{input::InputPlugin, prelude::*};
 /// use home_invasion::components::player::PlayerPlugin;
 ///
 /// App::new()
-///     .add_plugins((MinimalPlugins, AssetPlugin::default(),
-/// PlayerPlugin))
-///     .init_asset::<Mesh>()
-///     .init_asset::<StandardMaterial>()
+///     .add_plugins((
+///         MinimalPlugins,
+///         InputPlugin,
+///         AssetPlugin::default(),
+///         PlayerPlugin
+///     ))
 ///     .update();
 /// ```
 pub struct PlayerPlugin;
@@ -110,14 +93,18 @@ fn move_player(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use bevy::input::InputPlugin;
 
     #[test]
     fn test_player_plugin_build() {
         let mut app = App::new();
-        app.add_plugins((MinimalPlugins, AssetPlugin::default(), PlayerPlugin))
-            .init_asset::<Mesh>()
-            .init_asset::<StandardMaterial>()
-            .update();
+        app.add_plugins((
+            MinimalPlugins,
+            InputPlugin,
+            AssetPlugin::default(),
+            PlayerPlugin,
+        ))
+        .update();
         assert!(app.is_plugin_added::<PlayerPlugin>());
     }
 }
