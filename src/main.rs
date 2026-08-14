@@ -3,7 +3,7 @@ use bevy_camera_controller::free_camera::FreeCameraPlugin;
 
 use home_invasion::{
     cfg::window_plugin::build_platform_window_plugin,
-    components::{cam::CamPlugin, house::HousePlugin},
+    components::{cam::CamPlugin, house::HousePlugin, player::PlayerPlugin},
 };
 
 pub fn build_app() -> App {
@@ -18,6 +18,7 @@ pub fn build_app() -> App {
         FreeCameraPlugin,
         CamPlugin,
         HousePlugin,
+        PlayerPlugin,
     ));
     app
 }

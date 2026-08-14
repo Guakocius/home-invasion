@@ -7,6 +7,8 @@ use bevy::{
     world_serialization::WorldInstanceReady,
 };
 
+use super::player::Player;
+
 /// [Plugin] containing all animations.
 ///
 /// # Examples
@@ -116,12 +118,12 @@ pub fn door_animation_ready(
 
 fn open_door(
     mut door_query: Query<(&GlobalTransform, &mut AnimationPlayer, &DoorAnimation)>,
-    cam_query: Single<(&Camera3d, &GlobalTransform)>,
+    player_query: Single<&GlobalTransform, With<Player>>,
 ) {
-    let (_cam, cam_transform) = cam_query.into_inner();
+    let player_transform = player_query.into_inner();
 
     for (door_transform, mut player, animations) in &mut door_query {
-        let cam_distance = cam_transform
+        let cam_distance = player_transform
             .translation()
             .distance(door_transform.translation());
         if cam_distance > 10.0 {
