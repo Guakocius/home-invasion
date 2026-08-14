@@ -4,8 +4,11 @@ use std::f32::consts::FRAC_PI_2;
 
 use super::player::Player;
 use bevy::{
-    camera::visibility::RenderLayers, color::palettes::tailwind,
-    input::mouse::AccumulatedMouseMotion, prelude::*,
+    camera::visibility::RenderLayers,
+    color::palettes::tailwind,
+    input::mouse::AccumulatedMouseMotion,
+    prelude::*,
+    window::{CursorGrabMode, CursorOptions, PrimaryWindow},
 };
 
 const DEFAULT_RENDER_LAYER: usize = 0;
@@ -25,7 +28,7 @@ pub struct CamPlugin;
 
 impl Plugin for CamPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, (spawn_view_model, setup_cam_light));
+        app.add_systems(Startup, (spawn_view_model, setup_cam_light, grab_cursor));
     }
 }
 
@@ -41,15 +44,18 @@ impl Default for CameraSensitivity {
 #[derive(Debug, Component)]
 struct WorldModelCamera;
 
-fn spawn_view_model(
-    mut cmds: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
+fn grab_cursor(mut cursor_options: Query<&mut CursorOptions, With<PrimaryWindow>>) {
+    if let Ok(mut cursor) = cursor_options.single_mut() {
+        cursor.grab_mode = CursorGrabMode::Locked;
+        cursor.visible = false;
+    }
+}
+
+fn spawn_view_model(mut cmds: Commands) {
     cmds.spawn((
         Player,
         CameraSensitivity::default(),
-        Transform::from_xyz(0.0, 10.0, 0.0).looking_at(vec3(1.0, 0.0, 0.0), Vec3::Y),
+        Transform::from_xyz(0.0, 7.5, 0.0).looking_at(vec3(5.0, 7.5, 0.0), Vec3::Y),
         Visibility::default(),
         children![
             (
