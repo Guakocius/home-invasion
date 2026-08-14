@@ -83,8 +83,8 @@ fn setup_floor(
         Transform::from_scale(Vec3::splat(15.0)),
         Visibility::Visible,
     ))
-    .with_children(|children| {
-        children
+    .with_children(|parent| {
+        parent
             .spawn(Collider::cuboid(1.0, 0.0, 1.0))
             .insert(Transform::from_xyz(0.0, 0.0, 0.0));
     });
