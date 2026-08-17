@@ -4,6 +4,33 @@ use bevy::prelude::*;
 use std::f32::consts::{FRAC_PI_2, PI};
 
 /// The [Plugin] of the First Floor.
+///
+/// # Examples
+///
+/// ```
+/// use bevy::{
+///   asset::AssetPlugin,
+///   animation::AnimationClip,
+///   input::InputPlugin,
+///   prelude::*,
+///   state::app::StatesPlugin,
+///   world_serialization::WorldAsset,
+/// };
+/// use home_invasion::components::first_floor::FirstFloorPlugin;
+///
+/// App::new()
+///     .add_plugins((
+///         MinimalPlugins,
+///         InputPlugin,
+///         AssetPlugin::default(),
+///         StatesPlugin,
+///         FirstFloorPlugin,
+///     ))
+///     .init_asset::<AnimationGraph>()
+///     .init_asset::<AnimationClip>()
+///     .init_asset::<WorldAsset>()
+///     .update();
+/// ```
 pub struct FirstFloorPlugin;
 
 impl Plugin for FirstFloorPlugin {
