@@ -15,7 +15,10 @@ use std::{
     fmt,
 };
 
-use super::animations::{DoorAnimation, door_animation_ready};
+use super::{
+    animations::{DoorAnimation, door_animation_ready},
+    first_floor::FirstFloorPlugin,
+};
 
 const ERROR_MARGIN: f32 = 0.1;
 const SCALE: Vec3 = Vec3::new(4.0, 4.0, 4.0);
@@ -39,6 +42,8 @@ pub enum Rooms {
     Bathroom(bool),
     /// The house's bedroom.
     Bedroom(bool),
+    /// The house's dining room.
+    DiningRoom(bool),
     /// The house's hallway.
     Hallway(bool),
     /// The house's home office.
@@ -53,9 +58,9 @@ pub enum Rooms {
     Office(bool),
     /// The house's shower.
     Shower(bool),
-    /// The house's first storage.
+    /// The house's first floor storage.
     Storage1(bool),
-    /// The house's second storage.
+    /// The house's second floor storage.
     Storage2(bool),
     /// The house's toilet.
     Toilet(bool),
@@ -89,6 +94,7 @@ impl fmt::Display for Rooms {
             Rooms::Basement(_) => "Basement",
             Rooms::Bathroom(_) => "Bathroom",
             Rooms::Bedroom(_) => "Bedroom",
+            Rooms::DiningRoom(_) => "Dining Room",
             Rooms::Hallway(_) => "Hallway",
             Rooms::HomeOffice(_) => "Home Office",
             Rooms::KidsRoom(_) => "Kid's Room",
@@ -135,7 +141,7 @@ impl Plugin for RoomsPlugin {
             .init_asset::<AnimationClip>()
             .init_asset::<WorldAsset>()
             .insert_state(Rooms::Office(true))
-            .add_plugins(HomeOfficePlugin);
+            .add_plugins(FirstFloorPlugin);
     }
 }
 
@@ -494,84 +500,6 @@ pub fn spawn_room(
             }
         }
     });
-}
-
-/// Plugin for all the systems associated with the [`Rooms::HomeOffice`].
-///
-/// # Examples
-/// Loads and spawns the needed x.blend files.
-/// ```
-/// use bevy::{
-///   asset::AssetPlugin,
-///   animation::AnimationClip,
-///   input::InputPlugin,
-///   prelude::*,
-///   state::app::StatesPlugin,
-///   world_serialization::WorldAsset,
-/// };
-/// use home_invasion::components::rooms::HomeOfficePlugin;
-///
-/// App::new()
-///   .add_plugins((
-///     MinimalPlugins,
-///     InputPlugin,
-///     AssetPlugin::default(),
-///     StatesPlugin,
-///     HomeOfficePlugin
-///   ))
-///   .init_asset::<AnimationGraph>()
-///   .init_asset::<AnimationClip>()
-///   .init_asset::<WorldAsset>()
-///   .update();
-/// ```
-pub struct HomeOfficePlugin;
-
-impl Plugin for HomeOfficePlugin {
-    fn build(&self, app: &mut App) {
-        app.add_systems(Startup, setup_home_office);
-    }
-}
-
-fn setup_home_office(
-    mut cmds: Commands,
-    asset_server: Res<AssetServer>,
-    mut graphs: ResMut<Assets<AnimationGraph>>,
-) {
-    let bookshelf_z = [-6.0, -3.0, 0.0, 3.0, 6.0];
-    let mut props = vec![PropSpec {
-        asset_path: "models/HomeOffice_Table.glb".into(),
-        transform: Transform::from_translation(Vec3::new(5.0, 0.0, -0.5))
-            .with_rotation(Quat::from_rotation_y(PI)),
-        texture_path: None,
-    }];
-
-    for z in bookshelf_z {
-        props.push(PropSpec {
-            asset_path: "models/HomeOffice_Bookshelf.glb".into(),
-            transform: Transform::from_translation(Vec3::new(15.0, 0.0, z))
-                .with_rotation(Quat::from_rotation_y(FRAC_PI_2)),
-            texture_path: Some("textures/Dark_Wood_texture.png".into()),
-        });
-    }
-    let office_config = RoomConfig {
-        name: "Home Office".into(),
-        half_width: 16.0,
-        half_depth: 8.0,
-        step: 8.0,
-        wall_asset: "models/Wall_office.glb".into(),
-        corner_asset: "models/Wall_corner_1_office.glb".into(),
-        door_asset: "models/Wall_office_door.glb".into(),
-        door_indices: vec![1, 5],
-        props,
-        pos: Vec3::new(14.0, 0.0, -22.0),
-    };
-    spawn_room(
-        &mut cmds,
-        &asset_server,
-        &mut graphs,
-        &office_config,
-        Rooms::HomeOffice(true),
-    );
 }
 
 #[derive(Component)]

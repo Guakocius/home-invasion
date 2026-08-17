@@ -43,11 +43,14 @@ pub mod cfg {
 /// Component modules for the game.
 pub mod components {
     pub mod animations;
+    pub mod basement;
     pub mod cam;
+    pub mod first_floor;
     pub mod game_menu;
     pub mod house;
     pub mod player;
     pub mod rooms;
+    pub mod second_floor;
 }
 
 /// Utility modules such as the macros.
@@ -56,5 +59,8 @@ pub mod utils {
 }
 
 use cfg::window_plugin::*;
-use components::{animations::*, cam::*, game_menu::*, house::*, player::*, rooms::*};
+use components::{
+    animations::*, basement::*, cam::*, first_floor::*, game_menu::*, house::*, player::*,
+    rooms::*, second_floor::*,
+};
 use utils::macros::*;
