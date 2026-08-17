@@ -8,7 +8,16 @@ pub struct FirstFloorPlugin;
 
 impl Plugin for FirstFloorPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(HomeOfficePlugin);
+        app.add_plugins((
+            HomeOfficePlugin,
+            LivingRoomPlugin,
+            Storage1Plugin,
+            DiningRoomPlugin,
+            KitchenPlugin,
+            ToiletPlugin,
+            ShowerPlugin,
+            HallwayPlugin,
+        ));
     }
 }
 
