@@ -26,6 +26,9 @@ use std::f32::consts::{FRAC_PI_2, PI};
 ///         StatesPlugin,
 ///         FirstFloorPlugin,
 ///     ))
+///     .init_asset::<Image>()
+///     .init_asset::<Mesh>()
+///     .init_asset::<StandardMaterial>()
 ///     .init_asset::<AnimationGraph>()
 ///     .init_asset::<AnimationClip>()
 ///     .init_asset::<WorldAsset>()
