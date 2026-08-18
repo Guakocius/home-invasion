@@ -59,6 +59,8 @@ impl Plugin for HomeOfficePlugin {
 fn setup_home_office(
     mut cmds: Commands,
     asset_server: Res<AssetServer>,
+    meshes: ResMut<Assets<Mesh>>,
+    standard_materials: ResMut<Assets<StandardMaterial>>,
     mut graphs: ResMut<Assets<AnimationGraph>>,
 ) {
     let bookshelf_z = [-6.0, -3.0, 0.0, 3.0, 6.0];
@@ -92,6 +94,8 @@ fn setup_home_office(
     spawn_room(
         &mut cmds,
         &asset_server,
+        meshes,
+        standard_materials,
         &mut graphs,
         &office_config,
         Rooms::HomeOffice(true),
@@ -109,8 +113,47 @@ impl Plugin for LivingRoomPlugin {
 fn setup_living_room(
     mut cmds: Commands,
     asset_server: Res<AssetServer>,
+    meshes: ResMut<Assets<Mesh>>,
+    standard_materials: ResMut<Assets<StandardMaterial>>,
     mut graphs: ResMut<Assets<AnimationGraph>>,
 ) {
+    let bookshelf_z = [-9.0, -6.0, -3.0, 0.0, 3.0, 6.0, 9.0];
+    let mut props = vec![PropSpec {
+        asset_path: "models/HomeOffice_Table.glb".into(),
+        transform: Transform::from_translation(Vec3::new(2.5, 0.0, -0.5))
+            .with_rotation(Quat::from_rotation_y(PI)),
+        texture_path: None,
+    }];
+
+    for z in bookshelf_z {
+        props.push(PropSpec {
+            asset_path: "models/HomeOffice_Bookshelf.glb".into(),
+            transform: Transform::from_translation(Vec3::new(15.0, 0.0, z))
+                .with_rotation(Quat::from_rotation_y(FRAC_PI_2)),
+            texture_path: Some("textures/Dark_Wood_texture.png".into()),
+        });
+    }
+    let living_room_config = RoomConfig {
+        name: "Living Room".into(),
+        half_width: 8.0,
+        half_depth: 36.0,
+        step: 8.0,
+        wall_asset: "models/Wall_office.glb".into(),
+        corner_asset: "models/Wall_corner_1_office.glb".into(),
+        door_asset: "models/Wall_office_door.glb".into(),
+        door_indices: vec![5],
+        props,
+        pos: Vec3::new(38.0, 0.0, 0.0),
+    };
+    spawn_room(
+        &mut cmds,
+        &asset_server,
+        meshes,
+        standard_materials,
+        &mut graphs,
+        &living_room_config,
+        Rooms::LivingRoom(false),
+    );
 }
 
 struct Storage1Plugin;

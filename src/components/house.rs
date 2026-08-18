@@ -42,12 +42,12 @@ pub struct HousePlugin;
 
 impl Plugin for HousePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, setup_floor)
+        app /*.add_systems(Startup, setup_floor)*/
             .add_plugins((AnimationsPlugin, RoomsPlugin));
     }
 }
 
-fn configure_floor_texture_settings(s: &mut ImageLoaderSettings) {
+/*fn configure_floor_texture_settings(s: &mut ImageLoaderSettings) {
     *s = ImageLoaderSettings {
         sampler: ImageSampler::Descriptor(ImageSamplerDescriptor {
             address_mode_u: ImageAddressMode::Repeat,
@@ -88,7 +88,7 @@ fn setup_floor(
             .spawn(Collider::cuboid(1.0, 0.0, 1.0))
             .insert(Transform::from_xyz(0.0, 0.0, 0.0));
     });
-}
+}*/
 
 #[cfg(test)]
 mod tests {
@@ -96,7 +96,7 @@ mod tests {
 
     use super::*;
 
-    #[test]
+    /*#[test]
     fn test_house_plugin_build() {
         let mut app = App::new();
 
@@ -131,5 +131,5 @@ mod tests {
                 ..
             })
         ));
-    }
+    }*/
 }

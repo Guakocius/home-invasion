@@ -4,12 +4,15 @@ use bevy::{
     color::palettes::css::WHITE,
     ecs::event::Trigger,
     gltf::{GltfExtras, GltfMaterialExtras, GltfMaterialName},
+    image::{ImageAddressMode, ImageLoaderSettings, ImageSampler, ImageSamplerDescriptor},
     input::InputPlugin,
+    math::Affine2,
     platform::collections::HashMap,
     prelude::{Component, States, *},
     state::app::StatesPlugin,
     world_serialization::WorldInstanceReady,
 };
+use bevy_rapier3d::geometry::Collider;
 use std::{
     f32::consts::{FRAC_PI_2, PI},
     fmt,
@@ -434,6 +437,8 @@ pub fn generate_rooms(config: &RoomConfig) -> Vec<WallSegment> {
 pub fn spawn_room(
     cmds: &mut Commands,
     asset_server: &Res<AssetServer>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut standard_materials: ResMut<Assets<StandardMaterial>>,
     graphs: &mut ResMut<Assets<AnimationGraph>>,
     config: &RoomConfig,
     room_type: Rooms,
@@ -500,6 +505,45 @@ pub fn spawn_room(
             }
         }
     });
+
+    cmds.spawn((
+        Mesh3d(meshes.add(Plane3d::new(
+            Vec3::Y,
+            Vec2::new(config.half_width, config.half_depth),
+        ))),
+        MeshMaterial3d(
+            standard_materials.add(StandardMaterial {
+                base_color: Color::from(bevy::color::palettes::css::WHITE),
+                base_color_texture: Some(
+                    asset_server
+                        .load_builder()
+                        .with_settings(configure_floor_texture_settings)
+                        .load("textures/wooden_plank_floor.png"),
+                ),
+                uv_transform: Affine2::from_scale(vec2(10.0, 10.0)),
+                perceptual_roughness: 0.8,
+                ..default()
+            }),
+        ),
+        Transform::from_translation(config.pos),
+        Visibility::Visible,
+    ))
+    .with_children(|parent| {
+        parent
+            .spawn(Collider::cuboid(config.half_width, 0.1, config.half_depth))
+            .insert(Transform::from_xyz(0.0, 0.0, 0.0));
+    });
+}
+
+fn configure_floor_texture_settings(s: &mut ImageLoaderSettings) {
+    *s = ImageLoaderSettings {
+        sampler: ImageSampler::Descriptor(ImageSamplerDescriptor {
+            address_mode_u: ImageAddressMode::Repeat,
+            address_mode_v: ImageAddressMode::Repeat,
+            ..default()
+        }),
+        ..default()
+    };
 }
 
 #[derive(Component)]
