@@ -4,18 +4,24 @@ use bevy::{
     color::palettes::css::WHITE,
     ecs::event::Trigger,
     gltf::{GltfExtras, GltfMaterialExtras, GltfMaterialName},
+    image::{ImageAddressMode, ImageLoaderSettings, ImageSampler, ImageSamplerDescriptor},
     input::InputPlugin,
+    math::Affine2,
     platform::collections::HashMap,
     prelude::{Component, States, *},
     state::app::StatesPlugin,
     world_serialization::WorldInstanceReady,
 };
+use bevy_rapier3d::geometry::Collider;
 use std::{
     f32::consts::{FRAC_PI_2, PI},
     fmt,
 };
 
-use super::animations::{DoorAnimation, door_animation_ready};
+use super::{
+    animations::{DoorAnimation, door_animation_ready},
+    first_floor::FirstFloorPlugin,
+};
 
 const ERROR_MARGIN: f32 = 0.1;
 const SCALE: Vec3 = Vec3::new(4.0, 4.0, 4.0);
@@ -39,6 +45,8 @@ pub enum Rooms {
     Bathroom(bool),
     /// The house's bedroom.
     Bedroom(bool),
+    /// The house's dining room.
+    DiningRoom(bool),
     /// The house's hallway.
     Hallway(bool),
     /// The house's home office.
@@ -53,9 +61,9 @@ pub enum Rooms {
     Office(bool),
     /// The house's shower.
     Shower(bool),
-    /// The house's first storage.
+    /// The house's first floor storage.
     Storage1(bool),
-    /// The house's second storage.
+    /// The house's second floor storage.
     Storage2(bool),
     /// The house's toilet.
     Toilet(bool),
@@ -89,6 +97,7 @@ impl fmt::Display for Rooms {
             Rooms::Basement(_) => "Basement",
             Rooms::Bathroom(_) => "Bathroom",
             Rooms::Bedroom(_) => "Bedroom",
+            Rooms::DiningRoom(_) => "Dining Room",
             Rooms::Hallway(_) => "Hallway",
             Rooms::HomeOffice(_) => "Home Office",
             Rooms::KidsRoom(_) => "Kid's Room",
@@ -125,6 +134,12 @@ impl fmt::Display for Rooms {
 ///     StatesPlugin,
 ///     RoomsPlugin,
 ///   ))
+///   .init_asset::<Image>()
+///   .init_asset::<Mesh>()
+///   .init_asset::<StandardMaterial>()
+///   .init_asset::<AnimationGraph>()
+///   .init_asset::<AnimationClip>()
+///   .init_asset::<WorldAsset>()
 ///   .update();
 /// ```
 pub struct RoomsPlugin;
@@ -135,7 +150,7 @@ impl Plugin for RoomsPlugin {
             .init_asset::<AnimationClip>()
             .init_asset::<WorldAsset>()
             .insert_state(Rooms::Office(true))
-            .add_plugins(HomeOfficePlugin);
+            .add_plugins(FirstFloorPlugin);
     }
 }
 
@@ -235,11 +250,11 @@ pub struct PropSpec {
 ///   half_width: 16.0,
 ///   half_depth: 8.0,
 ///   step: 8.0,
-///   wall_asset: "models/Wall_office.glb".into(),
-///   corner_asset: "models/Wall_corner_1_office.glb".into(),
-///   door_asset: "models/Wall_office_door.glb".into(),
+///   wall_asset: Some("models/Wall_office.glb".into()),
+///   corner_asset: Some("models/Wall_corner_1_office.glb".into()),
+///   door_asset: Some("models/Wall_office_door.glb".into()),
 ///   door_indices: vec![1, 5],
-///   props,
+///   props: Some(props),
 ///   pos: Vec3::ZERO,
 /// };
 /// ```
@@ -254,16 +269,16 @@ pub struct RoomConfig {
     /// The physical width of a single [`WallSegment`].
     pub step: f32,
     /// The asset path of the `Wall`.
-    pub wall_asset: String,
+    pub wall_asset: Option<String>,
     /// The asset path of the corners.
-    pub corner_asset: String,
+    pub corner_asset: Option<String>,
     /// The asset path of the `Doors`.
-    pub door_asset: String,
+    pub door_asset: Option<String>,
     /// A [Vec] specifying which `Wall` positions around the `Room's` perimeter should be
     /// spawned as doors.
     pub door_indices: Vec<usize>,
     /// The `Room's` props.
-    pub props: Vec<PropSpec>,
+    pub props: Option<Vec<PropSpec>>,
     /// The `Room's` position in the world.
     pub pos: Vec3,
 }
@@ -289,11 +304,11 @@ pub struct RoomConfig {
 ///   half_width: 16.0,
 ///   half_depth: 8.0,
 ///   step: 8.0,
-///   wall_asset: "models/Wall_office.glb".into(),
-///   corner_asset: "models/Wall_corner_1_office.glb".into(),
-///   door_asset: "models/Wall_office_door.glb".into(),
+///   wall_asset: Some("models/Wall_office.glb".into()),
+///   corner_asset: Some("models/Wall_corner_1_office.glb".into()),
+///   door_asset: Some("models/Wall_office_door.glb".into()),
 ///   door_indices: vec![1, 5],
-///   props,
+///   props: Some(props),
 ///   pos: Vec3::ZERO,
 /// };
 /// let room = generate_rooms(&config);
@@ -383,6 +398,8 @@ pub fn generate_rooms(config: &RoomConfig) -> Vec<WallSegment> {
 /// fn setup(
 ///   mut cmds: Commands,
 ///   asset_server: Res<AssetServer>,
+///   meshes: ResMut<Assets<Mesh>>,
+///   standard_materials: ResMut<Assets<StandardMaterial>>,
 ///   mut graphs: ResMut<Assets<AnimationGraph>>,
 /// ) {
 ///   let mut props = vec![PropSpec {
@@ -397,16 +414,18 @@ pub fn generate_rooms(config: &RoomConfig) -> Vec<WallSegment> {
 ///     half_width: 16.0,
 ///     half_depth: 8.0,
 ///     step: 8.0,
-///     wall_asset: "models/Wall_office.glb".into(),
-///     corner_asset: "models/Wall_corner_1_office.glb".into(),
-///     door_asset: "models/Wall_office_door.glb".into(),
+///     wall_asset: Some("models/Wall_office.glb".into()),
+///     corner_asset: Some("models/Wall_corner_1_office.glb".into()),
+///     door_asset: Some("models/Wall_office_door.glb".into()),
 ///     door_indices: vec![1, 5],
-///     props,
+///     props: Some(props),
 ///     pos: Vec3::ZERO,
 ///   };
 ///   spawn_room(
 ///     &mut cmds,
 ///     &asset_server,
+///     meshes,
+///     standard_materials,
 ///     &mut graphs,
 ///     &office_config,
 ///     Rooms::HomeOffice(true),
@@ -419,6 +438,9 @@ pub fn generate_rooms(config: &RoomConfig) -> Vec<WallSegment> {
 ///     AssetPlugin::default(),
 ///     StatesPlugin,
 ///   ))
+///   .init_asset::<Image>()
+///   .init_asset::<Mesh>()
+///   .init_asset::<StandardMaterial>()
 ///   .init_asset::<AnimationGraph>()
 ///   .init_asset::<AnimationClip>()
 ///   .init_asset::<WorldAsset>()
@@ -428,6 +450,8 @@ pub fn generate_rooms(config: &RoomConfig) -> Vec<WallSegment> {
 pub fn spawn_room(
     cmds: &mut Commands,
     asset_server: &Res<AssetServer>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut standard_materials: ResMut<Assets<StandardMaterial>>,
     graphs: &mut ResMut<Assets<AnimationGraph>>,
     config: &RoomConfig,
     room_type: Rooms,
@@ -441,137 +465,105 @@ pub fn spawn_room(
         Wall,
     ))
     .with_children(|parent| {
-        for position in layout {
-            let is_door = matches!(position.wall_type, WallType::Door);
-            let asset_path = match position.wall_type {
-                WallType::Standard => &config.wall_asset,
-                WallType::Corner => &config.corner_asset,
-                WallType::Door => &config.door_asset,
-            };
+        if config.wall_asset.is_some() {
+            for position in layout {
+                let is_door = matches!(position.wall_type, WallType::Door);
+                let asset_path = match position.wall_type {
+                    WallType::Standard => &config.wall_asset,
+                    WallType::Corner => &config.corner_asset,
+                    WallType::Door => &config.door_asset,
+                };
 
-            let mut entity = parent.spawn((
-                WorldAssetRoot(
-                    asset_server.load(GltfAssetLabel::Scene(0).from_asset(asset_path.clone())),
-                ),
-                position.transform.with_scale(SCALE),
-            ));
+                if let Some(asset_path) = asset_path {
+                    let mut entity = parent.spawn((
+                        WorldAssetRoot(
+                            asset_server
+                                .load(GltfAssetLabel::Scene(0).from_asset(asset_path.clone())),
+                        ),
+                        position.transform.with_scale(SCALE),
+                    ));
 
-            if is_door {
-                entity.insert(Door);
+                    if is_door {
+                        entity.insert(Door);
 
-                let mut graph = AnimationGraph::new();
-                let mut indices = HashMap::new();
+                        let mut graph = AnimationGraph::new();
+                        let mut indices = HashMap::new();
 
-                for (i, name) in ["Door", "Door_Handles", "Door_inner_glass"]
-                    .iter()
-                    .enumerate()
-                {
-                    let clip = asset_server
-                        .load(GltfAssetLabel::Animation(i).from_asset(asset_path.clone()));
-                    let idx = graph.add_clip(clip, 1.0, graph.root);
-                    indices.insert((*name).to_string(), idx);
+                        for (i, name) in ["Door", "Door_Handles", "Door_inner_glass"]
+                            .iter()
+                            .enumerate()
+                        {
+                            let clip = asset_server
+                                .load(GltfAssetLabel::Animation(i).from_asset(asset_path.clone()));
+                            let idx = graph.add_clip(clip, 1.0, graph.root);
+                            indices.insert((*name).to_string(), idx);
+                        }
+
+                        let graph_handle = graphs.add(graph);
+                        entity.insert(DoorAnimation {
+                            handle: graph_handle,
+                            node_indices: indices,
+                        });
+                        entity.observe(door_animation_ready);
+                    }
                 }
-
-                let graph_handle = graphs.add(graph);
-                entity.insert(DoorAnimation {
-                    handle: graph_handle,
-                    node_indices: indices,
-                });
-                entity.observe(door_animation_ready);
             }
         }
+        if let Some(props) = &config.props {
+            for prop in props {
+                let mut entity = parent.spawn((
+                    WorldAssetRoot(
+                        asset_server
+                            .load(GltfAssetLabel::Scene(0).from_asset(prop.asset_path.clone())),
+                    ),
+                    prop.transform.with_scale(SCALE),
+                ));
 
-        for prop in &config.props {
-            let mut entity = parent.spawn((
-                WorldAssetRoot(
-                    asset_server.load(GltfAssetLabel::Scene(0).from_asset(prop.asset_path.clone())),
-                ),
-                prop.transform.with_scale(SCALE),
-            ));
-
-            if prop.texture_path.is_some() {
-                entity.observe(apply_bookshelf_texture);
+                if prop.texture_path.is_some() {
+                    entity.observe(apply_bookshelf_texture);
+                }
             }
         }
     });
+
+    cmds.spawn((
+        Mesh3d(meshes.add(Plane3d::new(
+            Vec3::Y,
+            Vec2::new(config.half_width, config.half_depth),
+        ))),
+        MeshMaterial3d(
+            standard_materials.add(StandardMaterial {
+                base_color: Color::from(bevy::color::palettes::css::WHITE),
+                base_color_texture: Some(
+                    asset_server
+                        .load_builder()
+                        .with_settings(configure_floor_texture_settings)
+                        .load("textures/wooden_plank_floor.png"),
+                ),
+                uv_transform: Affine2::from_scale(vec2(10.0, 10.0)),
+                perceptual_roughness: 0.8,
+                ..default()
+            }),
+        ),
+        Transform::from_translation(config.pos),
+        Visibility::Visible,
+    ))
+    .with_children(|parent| {
+        parent
+            .spawn(Collider::cuboid(config.half_width, 0.1, config.half_depth))
+            .insert(Transform::from_xyz(0.0, 0.0, 0.0));
+    });
 }
 
-/// Plugin for all the systems associated with the [`Rooms::HomeOffice`].
-///
-/// # Examples
-/// Loads and spawns the needed x.blend files.
-/// ```
-/// use bevy::{
-///   asset::AssetPlugin,
-///   animation::AnimationClip,
-///   input::InputPlugin,
-///   prelude::*,
-///   state::app::StatesPlugin,
-///   world_serialization::WorldAsset,
-/// };
-/// use home_invasion::components::rooms::HomeOfficePlugin;
-///
-/// App::new()
-///   .add_plugins((
-///     MinimalPlugins,
-///     InputPlugin,
-///     AssetPlugin::default(),
-///     StatesPlugin,
-///     HomeOfficePlugin
-///   ))
-///   .init_asset::<AnimationGraph>()
-///   .init_asset::<AnimationClip>()
-///   .init_asset::<WorldAsset>()
-///   .update();
-/// ```
-pub struct HomeOfficePlugin;
-
-impl Plugin for HomeOfficePlugin {
-    fn build(&self, app: &mut App) {
-        app.add_systems(Startup, setup_home_office);
-    }
-}
-
-fn setup_home_office(
-    mut cmds: Commands,
-    asset_server: Res<AssetServer>,
-    mut graphs: ResMut<Assets<AnimationGraph>>,
-) {
-    let bookshelf_z = [-6.0, -3.0, 0.0, 3.0, 6.0];
-    let mut props = vec![PropSpec {
-        asset_path: "models/HomeOffice_Table.glb".into(),
-        transform: Transform::from_translation(Vec3::new(5.0, 0.0, -0.5))
-            .with_rotation(Quat::from_rotation_y(PI)),
-        texture_path: None,
-    }];
-
-    for z in bookshelf_z {
-        props.push(PropSpec {
-            asset_path: "models/HomeOffice_Bookshelf.glb".into(),
-            transform: Transform::from_translation(Vec3::new(15.0, 0.0, z))
-                .with_rotation(Quat::from_rotation_y(FRAC_PI_2)),
-            texture_path: Some("textures/Dark_Wood_texture.png".into()),
-        });
-    }
-    let office_config = RoomConfig {
-        name: "Home Office".into(),
-        half_width: 16.0,
-        half_depth: 8.0,
-        step: 8.0,
-        wall_asset: "models/Wall_office.glb".into(),
-        corner_asset: "models/Wall_corner_1_office.glb".into(),
-        door_asset: "models/Wall_office_door.glb".into(),
-        door_indices: vec![1, 5],
-        props,
-        pos: Vec3::new(14.0, 0.0, -22.0),
+fn configure_floor_texture_settings(s: &mut ImageLoaderSettings) {
+    *s = ImageLoaderSettings {
+        sampler: ImageSampler::Descriptor(ImageSamplerDescriptor {
+            address_mode_u: ImageAddressMode::Repeat,
+            address_mode_v: ImageAddressMode::Repeat,
+            ..default()
+        }),
+        ..default()
     };
-    spawn_room(
-        &mut cmds,
-        &asset_server,
-        &mut graphs,
-        &office_config,
-        Rooms::HomeOffice(true),
-    );
 }
 
 #[derive(Component)]
@@ -627,19 +619,5 @@ mod tests {
         assert_eq!(format!("{}", Rooms::Storage1(true)), "Storage 1");
         assert_eq!(format!("{}", Rooms::Storage2(true)), "Storage 2");
         assert_eq!(format!("{}", Rooms::Toilet(true)), "Toilet");
-    }
-
-    #[test]
-    fn test_rooms_plugin_build() {
-        let mut app = App::new();
-        app.add_plugins((
-            MinimalPlugins,
-            InputPlugin,
-            AssetPlugin::default(),
-            StatesPlugin,
-            RoomsPlugin,
-        ))
-        .update();
-        assert!(app.is_plugin_added::<RoomsPlugin>());
     }
 }
