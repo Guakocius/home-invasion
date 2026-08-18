@@ -84,11 +84,11 @@ fn setup_home_office(
         half_width: 16.0,
         half_depth: 8.0,
         step: 8.0,
-        wall_asset: "models/Wall_office.glb".into(),
-        corner_asset: "models/Wall_corner_1_office.glb".into(),
-        door_asset: "models/Wall_office_door.glb".into(),
+        wall_asset: Some("models/Wall_office.glb".into()),
+        corner_asset: Some("models/Wall_corner_1_office.glb".into()),
+        door_asset: Some("models/Wall_office_door.glb".into()),
         door_indices: vec![1, 5],
-        props,
+        props: Some(props),
         pos: Vec3::new(14.0, 0.0, -22.0),
     };
     spawn_room(
@@ -138,12 +138,12 @@ fn setup_living_room(
         half_width: 8.0,
         half_depth: 36.0,
         step: 8.0,
-        wall_asset: "models/Wall_office.glb".into(),
-        corner_asset: "models/Wall_corner_1_office.glb".into(),
-        door_asset: "models/Wall_office_door.glb".into(),
+        wall_asset: Some("models/Wall_office.glb".into()),
+        corner_asset: Some("models/Wall_corner_1_office.glb".into()),
+        door_asset: Some("models/Wall_office_door.glb".into()),
         door_indices: vec![5],
-        props,
-        pos: Vec3::new(38.0, 0.0, 0.0),
+        props: Some(props),
+        pos: Vec3::new(38.0, 0.0, 6.0),
     };
     spawn_room(
         &mut cmds,
@@ -167,8 +167,31 @@ impl Plugin for Storage1Plugin {
 fn setup_storage1(
     mut cmds: Commands,
     asset_server: Res<AssetServer>,
+    meshes: ResMut<Assets<Mesh>>,
+    standard_materials: ResMut<Assets<StandardMaterial>>,
     mut graphs: ResMut<Assets<AnimationGraph>>,
 ) {
+    let storage1_config = RoomConfig {
+        name: "Storage 1".into(),
+        half_width: 16.0,
+        half_depth: 8.0,
+        step: 8.0,
+        wall_asset: Some("models/Wall_office.glb".into()),
+        corner_asset: Some("models/Wall_corner_1_office.glb".into()),
+        door_asset: Some("models/Wall_office_door.glb".into()),
+        door_indices: vec![10],
+        props: None,
+        pos: Vec3::new(14.0, 0.0, 34.0),
+    };
+    spawn_room(
+        &mut cmds,
+        &asset_server,
+        meshes,
+        standard_materials,
+        &mut graphs,
+        &storage1_config,
+        Rooms::Storage1(false),
+    );
 }
 
 struct DiningRoomPlugin;
@@ -182,8 +205,31 @@ impl Plugin for DiningRoomPlugin {
 fn setup_dining_room(
     mut cmds: Commands,
     asset_server: Res<AssetServer>,
+    meshes: ResMut<Assets<Mesh>>,
+    standard_materials: ResMut<Assets<StandardMaterial>>,
     mut graphs: ResMut<Assets<AnimationGraph>>,
 ) {
+    let dining_room_config = RoomConfig {
+        name: "Dining Room".into(),
+        half_width: 16.0,
+        half_depth: 8.0,
+        step: 8.0,
+        wall_asset: Some("models/Wall_office.glb".into()),
+        corner_asset: Some("models/Wall_corner_1_office.glb".into()),
+        door_asset: Some("models/Wall_office_door.glb".into()),
+        door_indices: vec![10],
+        props: None,
+        pos: Vec3::new(-18.0, 0.0, 34.0),
+    };
+    spawn_room(
+        &mut cmds,
+        &asset_server,
+        meshes,
+        standard_materials,
+        &mut graphs,
+        &dining_room_config,
+        Rooms::DiningRoom(false),
+    );
 }
 
 struct KitchenPlugin;
@@ -197,8 +243,31 @@ impl Plugin for KitchenPlugin {
 fn setup_kitchen(
     mut cmds: Commands,
     asset_server: Res<AssetServer>,
+    meshes: ResMut<Assets<Mesh>>,
+    standard_materials: ResMut<Assets<StandardMaterial>>,
     mut graphs: ResMut<Assets<AnimationGraph>>,
 ) {
+    let kitchen_config = RoomConfig {
+        name: "Kitchen".into(),
+        half_width: 16.0,
+        half_depth: 8.0,
+        step: 8.0,
+        wall_asset: Some("models/Wall_office.glb".into()),
+        corner_asset: Some("models/Wall_corner_1_office.glb".into()),
+        door_asset: Some("models/Wall_office_door.glb".into()),
+        door_indices: vec![10],
+        props: None,
+        pos: Vec3::new(-50.0, 0.0, 34.0),
+    };
+    spawn_room(
+        &mut cmds,
+        &asset_server,
+        meshes,
+        standard_materials,
+        &mut graphs,
+        &kitchen_config,
+        Rooms::DiningRoom(false),
+    );
 }
 
 struct ToiletPlugin;
@@ -212,8 +281,31 @@ impl Plugin for ToiletPlugin {
 fn setup_toilet(
     mut cmds: Commands,
     asset_server: Res<AssetServer>,
+    meshes: ResMut<Assets<Mesh>>,
+    standard_materials: ResMut<Assets<StandardMaterial>>,
     mut graphs: ResMut<Assets<AnimationGraph>>,
 ) {
+    let toilet_config = RoomConfig {
+        name: "Toilet".into(),
+        half_width: 8.0,
+        half_depth: 8.0,
+        step: 8.0,
+        wall_asset: Some("models/Wall_office.glb".into()),
+        corner_asset: Some("models/Wall_corner_1_office.glb".into()),
+        door_asset: Some("models/Wall_office_door.glb".into()),
+        door_indices: vec![3],
+        props: None,
+        pos: Vec3::new(-40.0, 0.0, -34.0),
+    };
+    spawn_room(
+        &mut cmds,
+        &asset_server,
+        meshes,
+        standard_materials,
+        &mut graphs,
+        &toilet_config,
+        Rooms::DiningRoom(false),
+    );
 }
 
 struct ShowerPlugin;
@@ -227,8 +319,31 @@ impl Plugin for ShowerPlugin {
 fn setup_shower(
     mut cmds: Commands,
     asset_server: Res<AssetServer>,
+    meshes: ResMut<Assets<Mesh>>,
+    standard_materials: ResMut<Assets<StandardMaterial>>,
     mut graphs: ResMut<Assets<AnimationGraph>>,
 ) {
+    let shower_config = RoomConfig {
+        name: "Shower".into(),
+        half_width: 8.0,
+        half_depth: 8.0,
+        step: 8.0,
+        wall_asset: Some("models/Wall_office.glb".into()),
+        corner_asset: Some("models/Wall_corner_1_office.glb".into()),
+        door_asset: Some("models/Wall_office_door.glb".into()),
+        door_indices: vec![3],
+        props: None,
+        pos: Vec3::new(-56.0, 0.0, -34.0),
+    };
+    spawn_room(
+        &mut cmds,
+        &asset_server,
+        meshes,
+        standard_materials,
+        &mut graphs,
+        &shower_config,
+        Rooms::DiningRoom(false),
+    );
 }
 
 struct HallwayPlugin;
@@ -242,6 +357,29 @@ impl Plugin for HallwayPlugin {
 fn setup_hallway(
     mut cmds: Commands,
     asset_server: Res<AssetServer>,
+    meshes: ResMut<Assets<Mesh>>,
+    standard_materials: ResMut<Assets<StandardMaterial>>,
     mut graphs: ResMut<Assets<AnimationGraph>>,
 ) {
+    let hallway_config = RoomConfig {
+        name: "Hallway".into(),
+        half_width: 70.0,
+        half_depth: 32.0,
+        step: 8.0,
+        wall_asset: None,
+        corner_asset: None,
+        door_asset: None,
+        door_indices: vec![5],
+        props: None,
+        pos: Vec3::new(-0.0, 0.0, 0.0),
+    };
+    spawn_room(
+        &mut cmds,
+        &asset_server,
+        meshes,
+        standard_materials,
+        &mut graphs,
+        &hallway_config,
+        Rooms::Storage1(false),
+    );
 }

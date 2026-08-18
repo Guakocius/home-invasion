@@ -263,16 +263,16 @@ pub struct RoomConfig {
     /// The physical width of a single [`WallSegment`].
     pub step: f32,
     /// The asset path of the `Wall`.
-    pub wall_asset: String,
+    pub wall_asset: Option<String>,
     /// The asset path of the corners.
-    pub corner_asset: String,
+    pub corner_asset: Option<String>,
     /// The asset path of the `Doors`.
-    pub door_asset: String,
+    pub door_asset: Option<String>,
     /// A [Vec] specifying which `Wall` positions around the `Room's` perimeter should be
     /// spawned as doors.
     pub door_indices: Vec<usize>,
     /// The `Room's` props.
-    pub props: Vec<PropSpec>,
+    pub props: Option<Vec<PropSpec>>,
     /// The `Room's` position in the world.
     pub pos: Vec3,
 }
@@ -452,56 +452,61 @@ pub fn spawn_room(
         Wall,
     ))
     .with_children(|parent| {
-        for position in layout {
-            let is_door = matches!(position.wall_type, WallType::Door);
-            let asset_path = match position.wall_type {
-                WallType::Standard => &config.wall_asset,
-                WallType::Corner => &config.corner_asset,
-                WallType::Door => &config.door_asset,
-            };
+        if config.wall_asset.is_some() {
+            for position in layout {
+                let is_door = matches!(position.wall_type, WallType::Door);
+                let asset_path = match position.wall_type {
+                    WallType::Standard => &config.wall_asset,
+                    WallType::Corner => &config.corner_asset,
+                    WallType::Door => &config.door_asset,
+                };
 
-            let mut entity = parent.spawn((
-                WorldAssetRoot(
-                    asset_server.load(GltfAssetLabel::Scene(0).from_asset(asset_path.clone())),
-                ),
-                position.transform.with_scale(SCALE),
-            ));
+                let asset_path = asset_path.clone().unwrap();
+                let mut entity = parent.spawn((
+                    WorldAssetRoot(
+                        asset_server.load(GltfAssetLabel::Scene(0).from_asset(asset_path.clone())),
+                    ),
+                    position.transform.with_scale(SCALE),
+                ));
 
-            if is_door {
-                entity.insert(Door);
+                if is_door {
+                    entity.insert(Door);
 
-                let mut graph = AnimationGraph::new();
-                let mut indices = HashMap::new();
+                    let mut graph = AnimationGraph::new();
+                    let mut indices = HashMap::new();
 
-                for (i, name) in ["Door", "Door_Handles", "Door_inner_glass"]
-                    .iter()
-                    .enumerate()
-                {
-                    let clip = asset_server
-                        .load(GltfAssetLabel::Animation(i).from_asset(asset_path.clone()));
-                    let idx = graph.add_clip(clip, 1.0, graph.root);
-                    indices.insert((*name).to_string(), idx);
+                    for (i, name) in ["Door", "Door_Handles", "Door_inner_glass"]
+                        .iter()
+                        .enumerate()
+                    {
+                        let clip = asset_server
+                            .load(GltfAssetLabel::Animation(i).from_asset(asset_path.clone()));
+                        let idx = graph.add_clip(clip, 1.0, graph.root);
+                        indices.insert((*name).to_string(), idx);
+                    }
+
+                    let graph_handle = graphs.add(graph);
+                    entity.insert(DoorAnimation {
+                        handle: graph_handle,
+                        node_indices: indices,
+                    });
+                    entity.observe(door_animation_ready);
                 }
-
-                let graph_handle = graphs.add(graph);
-                entity.insert(DoorAnimation {
-                    handle: graph_handle,
-                    node_indices: indices,
-                });
-                entity.observe(door_animation_ready);
             }
         }
+        if config.props.is_some() {
+            for prop in &config.props.clone().unwrap() {
+                let mut entity = parent.spawn((
+                    WorldAssetRoot(
+                        asset_server
+                            .load(GltfAssetLabel::Scene(0).from_asset(prop.asset_path.clone())),
+                    ),
+                    prop.transform.with_scale(SCALE),
+                ));
 
-        for prop in &config.props {
-            let mut entity = parent.spawn((
-                WorldAssetRoot(
-                    asset_server.load(GltfAssetLabel::Scene(0).from_asset(prop.asset_path.clone())),
-                ),
-                prop.transform.with_scale(SCALE),
-            ));
-
-            if prop.texture_path.is_some() {
-                entity.observe(apply_bookshelf_texture);
+                if prop.texture_path.is_some() {
+                    entity.observe(apply_bookshelf_texture);
+                }
             }
         }
     });
