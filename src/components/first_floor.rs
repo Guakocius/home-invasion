@@ -269,7 +269,7 @@ fn setup_kitchen(
         standard_materials,
         &mut graphs,
         &kitchen_config,
-        Rooms::DiningRoom(false),
+        Rooms::Kitchen(false),
     );
 }
 
@@ -307,7 +307,7 @@ fn setup_toilet(
         standard_materials,
         &mut graphs,
         &toilet_config,
-        Rooms::DiningRoom(false),
+        Rooms::Toilet(false),
     );
 }
 
@@ -345,7 +345,7 @@ fn setup_shower(
         standard_materials,
         &mut graphs,
         &shower_config,
-        Rooms::DiningRoom(false),
+        Rooms::Shower(false),
     );
 }
 
@@ -383,6 +383,6 @@ fn setup_hallway(
         standard_materials,
         &mut graphs,
         &hallway_config,
-        Rooms::Storage1(false),
+        Rooms::Hallway(false),
     );
 }
