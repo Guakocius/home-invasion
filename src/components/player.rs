@@ -84,7 +84,7 @@ fn move_player(
         let movement_speed = 5.0;
 
         let normalized_dir = direction.normalize();
-        let move_vector = transform.rotation * normalized_dir;
+        let move_vector = transform.rotation * normalized_dir * Vec3::new(1.0, 0.0, 1.0);
 
         transform.translation += move_vector * movement_speed * time.delta_secs();
     }
