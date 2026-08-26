@@ -33,13 +33,6 @@ jobs:
       - name: Cache Cargo dependencies
         uses: Swatinem/rust-cache@v2
 
-      - name: Check disk space (before build)
-        run: |
-          echo "=== Disk usage ==="
-          df -h
-          echo "=== Largest dirs on root ==="
-          sudo du -sh /usr/* /opt/* /home/* 2>/dev/null | sort -rh | head -20
-
       - name: Run Clippy
         run: cargo clippy -- -D warnings
 
