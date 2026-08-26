@@ -43,33 +43,15 @@ jobs:
       - name: Run Clippy
         run: cargo clippy -- -D warnings
 
-      - name: Check disk space (after clippy, before tests)
-        run: |
-          df -h
-          echo "=== target dir size ==="
-          du -sh target 2>/dev/null || echo "no target dir yet"
-
       - name: Install mold linker
         run: sudo apt-get install -y mold
 
       - name: Run Tests
         env:
+          CARGO_BUILD_JOBS: "2"
           RUSTFLAGS: "-C link-arg=-fuse-ld=mold"
         run: |
-          free -h
           cargo test
-          CARGO_PID=$!
-          while kill -0 $CARGO_PID 2>/dev/null; do
-            free -h
-            sleep 25
-          done
-          wait $CARGO_PID
-
-      - name: Check disk space (after tests)
-        if: always()
-        run: |
-          df -h
-          du -sh target 2>/dev/null || echo "no target dir"
 
   create-and-merge-pr:
     needs: test-and-clippy
