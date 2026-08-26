@@ -14,6 +14,7 @@ env:
 jobs:
   test-and-clippy:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -43,6 +44,7 @@ jobs:
         env:
           CARGO_BUILD_JOBS: "2"
           RUSTFLAGS: "-C link-arg=-fuse-ld=mold"
+        timeout-minutes: 30
         run: |
           cargo test
 
