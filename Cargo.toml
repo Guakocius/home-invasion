@@ -43,7 +43,7 @@ bevy = { version = "0.19.0", default-features = false, features = [
 bevy_camera_controller = { version = "0.19.0", default-features = false, features = [
   "free_camera",
 ] }
-bevy_rapier3d = { version = "0.35.0", default-features = false, features = [
+bevy_rapier3d = { version = "0.36.0", default-features = false, features = [
   "dim3",
 ] }
 rapier3d = "0.34.0"
@@ -51,6 +51,10 @@ rapier3d = "0.34.0"
 [dependencies.bevy_gltf]
 version = "0.19.0"
 features = ["bevy_animation"]
+
+[profile.test]
+debug = 0
+opt-level = 0
 
 [profile.dev]
 debug = 0
