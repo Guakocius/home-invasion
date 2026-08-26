@@ -49,7 +49,15 @@ jobs:
         run: cargo test
 
       - name: Run Tests
-        run: cargo test
+        run: |
+          free -h
+          cargo test
+          CARGO_PID=$!
+          while kill -0 $CARGO_PID 2>/dev/null; do
+            free -h
+            sleep 25
+          done
+          wait $CARGO_PID
 
       - name: Check disk space (after tests)
         if: always()
