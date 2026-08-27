@@ -5,6 +5,7 @@ use std::f32::consts::FRAC_PI_2;
 use super::player::Player;
 use bevy::{
     camera::visibility::RenderLayers,
+    camera::Viewport,
     color::palettes::tailwind,
     input::mouse::AccumulatedMouseMotion,
     prelude::*,
@@ -28,7 +29,7 @@ pub struct CamPlugin;
 
 impl Plugin for CamPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, (spawn_view_model, setup_cam_light, grab_cursor));
+        app.add_systems(Startup, (spawn_view_model, setup_cam_light, grab_cursor, spawn_minimap));
     }
 }
 
@@ -118,6 +119,23 @@ fn setup_cam_light(mut cmds: Commands) {
         DirectionalLight::default(),
         Transform::from_xyz(10.0, 10.0, 10.0).looking_at(Vec3::ONE, Vec3::Y),
         RenderLayers::from_layers(&[DEFAULT_RENDER_LAYER, VIEW_MODEL_RENDER_LAYER]),
+    ));
+}
+
+fn spawn_minimap(mut cmds: Commands) {
+    cmds.spawn((
+        Camera3d::default(),
+        Camera {
+            order: 2,
+            clear_color: ClearColorConfig::None,
+            viewport: Some(Viewport {
+                physical_position: UVec2::ZERO,
+                physical_size: UVec2::new(150, 150),
+                ..default()
+            }),
+            ..default()
+        },
+        Transform::from_xyz(0.0, 178.0, 0.0).looking_at(Vec3::ZERO, Vec3::Y),
     ));
 }
 
