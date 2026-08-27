@@ -290,7 +290,7 @@ fn setup_toilet2(
         door_asset: Some("models/Wall_office_door.glb".into()),
         door_indices: vec![3],
         props: None,
-        pos: Vec3::new(-40.0, 0.0, -34.0),
+        pos: Vec3::new(-40.0, 14.0, -34.0),
     };
     spawn_room(
         &mut cmds,
@@ -328,7 +328,7 @@ fn setup_hallway2(
         door_asset: None,
         door_indices: vec![5],
         props: None,
-        pos: Vec3::new(-0.0, 0.0, 0.0),
+        pos: Vec3::new(0.0, 14.0, 0.0),
     };
     spawn_room(
         &mut cmds,

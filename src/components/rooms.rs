@@ -18,11 +18,11 @@ use std::{
     fmt,
 };
 
-use crate::components::second_floor::SecondFloorPlugin;
-
 use super::{
     animations::{DoorAnimation, door_animation_ready},
+    basement::BasementPlugin,
     first_floor::FirstFloorPlugin,
+    second_floor::SecondFloorPlugin,
 };
 
 const ERROR_MARGIN: f32 = 0.1;
@@ -158,7 +158,7 @@ impl Plugin for RoomsPlugin {
             .init_asset::<AnimationClip>()
             .init_asset::<WorldAsset>()
             .insert_state(Rooms::Office(true))
-            .add_plugins((FirstFloorPlugin, SecondFloorPlugin));
+            .add_plugins((BasementPlugin, FirstFloorPlugin, SecondFloorPlugin));
     }
 }
 
