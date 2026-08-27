@@ -44,9 +44,9 @@ impl Plugin for FirstFloorPlugin {
             Storage1Plugin,
             DiningRoomPlugin,
             KitchenPlugin,
-            ToiletPlugin,
+            Toilet1Plugin,
             ShowerPlugin,
-            HallwayPlugin,
+            Hallway1Plugin,
         ));
     }
 }
@@ -83,7 +83,7 @@ fn setup_home_office(
         });
     }
 
-    let office_config = RoomConfig {
+    let home_office_config = RoomConfig {
         name: "Home Office".into(),
         half_width: 16.0,
         half_depth: 8.0,
@@ -101,7 +101,7 @@ fn setup_home_office(
         meshes,
         standard_materials,
         &mut graphs,
-        &office_config,
+        &home_office_config,
         Rooms::HomeOffice(true),
     );
 }
@@ -288,23 +288,23 @@ fn setup_kitchen(
     );
 }
 
-struct ToiletPlugin;
+struct Toilet1Plugin;
 
-impl Plugin for ToiletPlugin {
+impl Plugin for Toilet1Plugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, setup_toilet);
+        app.add_systems(Startup, setup_toilet1);
     }
 }
 
-fn setup_toilet(
+fn setup_toilet1(
     mut cmds: Commands,
     asset_server: Res<AssetServer>,
     meshes: ResMut<Assets<Mesh>>,
     standard_materials: ResMut<Assets<StandardMaterial>>,
     mut graphs: ResMut<Assets<AnimationGraph>>,
 ) {
-    let toilet_config = RoomConfig {
-        name: "Toilet".into(),
+    let toilet1_config = RoomConfig {
+        name: "Toilet 1".into(),
         half_width: 8.0,
         half_depth: 8.0,
         step: 8.0,
@@ -321,8 +321,8 @@ fn setup_toilet(
         meshes,
         standard_materials,
         &mut graphs,
-        &toilet_config,
-        Rooms::Toilet(false),
+        &toilet1_config,
+        Rooms::Toilet1(false),
     );
 }
 
@@ -370,22 +370,22 @@ fn setup_shower(
     );
 }
 
-struct HallwayPlugin;
+struct Hallway1Plugin;
 
-impl Plugin for HallwayPlugin {
+impl Plugin for Hallway1Plugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, setup_hallway);
+        app.add_systems(Startup, setup_hallway1);
     }
 }
 
-fn setup_hallway(
+fn setup_hallway1(
     mut cmds: Commands,
     asset_server: Res<AssetServer>,
     meshes: ResMut<Assets<Mesh>>,
     standard_materials: ResMut<Assets<StandardMaterial>>,
     mut graphs: ResMut<Assets<AnimationGraph>>,
 ) {
-    let hallway_config = RoomConfig {
+    let hallway1_config = RoomConfig {
         name: "Hallway".into(),
         half_width: 70.0,
         half_depth: 32.0,
@@ -403,7 +403,7 @@ fn setup_hallway(
         meshes,
         standard_materials,
         &mut graphs,
-        &hallway_config,
-        Rooms::Hallway(false),
+        &hallway1_config,
+        Rooms::Hallway1(false),
     );
 }
