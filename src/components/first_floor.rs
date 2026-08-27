@@ -82,6 +82,25 @@ fn setup_home_office(
             texture_path: Some("textures/Dark_Wood_texture.png".into()),
         });
     }
+
+    props.push(PropSpec {
+        asset_path: "models/corner_couch.glb".into(),
+        transform: Transform::from_translation(Vec3::new(18.4, 0.0, -5.6))
+            .with_rotation(Quat::from_rotation_y(-FRAC_PI_2)),
+        texture_path: None,
+    });
+
+    let table_x = [-25.0, -60.0];
+    for x in table_x {
+        props.push(PropSpec {
+            asset_path: "models/table.glb".into(),
+            transform: Transform::from_translation(Vec3::new(x, 0.5, 55.0))
+                .with_rotation(Quat::from_rotation_y(FRAC_PI_2)),
+            texture_path: Some("textures/Dark_Wood_texture.png".into()),
+        });
+    }
+
+
     let office_config = RoomConfig {
         name: "Home Office".into(),
         half_width: 16.0,
