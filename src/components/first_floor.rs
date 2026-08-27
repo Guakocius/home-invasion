@@ -341,6 +341,12 @@ fn setup_shower(
     standard_materials: ResMut<Assets<StandardMaterial>>,
     mut graphs: ResMut<Assets<AnimationGraph>>,
 ) {
+    let props = vec![PropSpec {
+        asset_path: "models/simplified_shower.glb".into(),
+        transform: Transform::from_translation(Vec3::new(-5.5, 0.0, 0.0)),
+        texture_path: None,
+    }];
+
     let shower_config = RoomConfig {
         name: "Shower".into(),
         half_width: 8.0,
@@ -350,7 +356,7 @@ fn setup_shower(
         corner_asset: Some("models/Wall_corner_1_office.glb".into()),
         door_asset: Some("models/Wall_office_door.glb".into()),
         door_indices: vec![3],
-        props: None,
+        props: Some(props),
         pos: Vec3::new(-56.0, 0.0, -34.0),
     };
     spawn_room(
