@@ -17,7 +17,7 @@ use std::f32::consts::{FRAC_PI_2, PI};
 ///   state::app::StatesPlugin,
 ///   world_serialization::WorldAsset,
 /// };
-/// use home_invasion::components::second_floor::BasementPlugin;
+/// use home_invasion::components::basement::BasementPlugin;
 ///
 /// App::new()
 ///     .add_plugins((
@@ -25,7 +25,7 @@ use std::f32::consts::{FRAC_PI_2, PI};
 ///         InputPlugin,
 ///         AssetPlugin::default(),
 ///         StatesPlugin,
-///         SecondFloorPlugin,
+///         BasementPlugin,
 ///     ))
 ///     .init_asset::<Image>()
 ///     .init_asset::<Mesh>()
