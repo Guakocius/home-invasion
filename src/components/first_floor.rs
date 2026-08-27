@@ -83,24 +83,6 @@ fn setup_home_office(
         });
     }
 
-    props.push(PropSpec {
-        asset_path: "models/corner_couch.glb".into(),
-        transform: Transform::from_translation(Vec3::new(18.4, 0.0, -5.6))
-            .with_rotation(Quat::from_rotation_y(-FRAC_PI_2)),
-        texture_path: None,
-    });
-
-    let table_x = [-25.0, -60.0];
-    for x in table_x {
-        props.push(PropSpec {
-            asset_path: "models/table.glb".into(),
-            transform: Transform::from_translation(Vec3::new(x, 0.5, 55.0))
-                .with_rotation(Quat::from_rotation_y(FRAC_PI_2)),
-            texture_path: Some("textures/Dark_Wood_texture.png".into()),
-        });
-    }
-
-
     let office_config = RoomConfig {
         name: "Home Office".into(),
         half_width: 16.0,
@@ -139,22 +121,23 @@ fn setup_living_room(
     standard_materials: ResMut<Assets<StandardMaterial>>,
     mut graphs: ResMut<Assets<AnimationGraph>>,
 ) {
-    let bookshelf_z = [-9.0, -6.0, -3.0, 0.0, 3.0, 6.0, 9.0];
+    let bookshelf_z = [-20.0, -17.0, -14.0, -11.0, -8.0, -5.0, -2.0];
     let mut props = vec![PropSpec {
-        asset_path: "models/HomeOffice_Table.glb".into(),
-        transform: Transform::from_translation(Vec3::new(2.5, 0.0, -0.5))
-            .with_rotation(Quat::from_rotation_y(PI)),
+        asset_path: "models/corner_couch.glb".into(),
+        transform: Transform::from_translation(Vec3::new(-5.4, 0.0, -33.5))
+            .with_rotation(Quat::from_rotation_y(-FRAC_PI_2)),
         texture_path: None,
     }];
 
     for z in bookshelf_z {
         props.push(PropSpec {
             asset_path: "models/HomeOffice_Bookshelf.glb".into(),
-            transform: Transform::from_translation(Vec3::new(15.0, 0.0, z))
-                .with_rotation(Quat::from_rotation_y(FRAC_PI_2)),
+            transform: Transform::from_translation(Vec3::new(-7.0, 0.0, z))
+                .with_rotation(Quat::from_rotation_y(-FRAC_PI_2)),
             texture_path: Some("textures/Dark_Wood_texture.png".into()),
         });
     }
+
     let living_room_config = RoomConfig {
         name: "Living Room".into(),
         half_width: 8.0,
@@ -231,6 +214,12 @@ fn setup_dining_room(
     standard_materials: ResMut<Assets<StandardMaterial>>,
     mut graphs: ResMut<Assets<AnimationGraph>>,
 ) {
+    let props = vec![PropSpec {
+        asset_path: "models/table.glb".into(),
+        transform: Transform::from_translation(Vec3::new(-3.0, 0.5, 0.0)),
+        texture_path: None,
+    }];
+
     let dining_room_config = RoomConfig {
         name: "Dining Room".into(),
         half_width: 16.0,
@@ -240,9 +229,10 @@ fn setup_dining_room(
         corner_asset: Some("models/Wall_corner_1_office.glb".into()),
         door_asset: Some("models/Wall_office_door.glb".into()),
         door_indices: vec![10],
-        props: None,
+        props: Some(props),
         pos: Vec3::new(-18.0, 0.0, 34.0),
     };
+
     spawn_room(
         &mut cmds,
         &asset_server,
@@ -269,6 +259,11 @@ fn setup_kitchen(
     standard_materials: ResMut<Assets<StandardMaterial>>,
     mut graphs: ResMut<Assets<AnimationGraph>>,
 ) {
+    let props = vec![PropSpec {
+        asset_path: "models/table.glb".into(),
+        transform: Transform::from_translation(Vec3::new(-2.0, 0.5, 0.0)),
+        texture_path: None,
+    }];
     let kitchen_config = RoomConfig {
         name: "Kitchen".into(),
         half_width: 16.0,
@@ -278,9 +273,10 @@ fn setup_kitchen(
         corner_asset: Some("models/Wall_corner_1_office.glb".into()),
         door_asset: Some("models/Wall_office_door.glb".into()),
         door_indices: vec![10],
-        props: None,
+        props: Some(props),
         pos: Vec3::new(-50.0, 0.0, 34.0),
     };
+
     spawn_room(
         &mut cmds,
         &asset_server,
