@@ -18,6 +18,8 @@ use std::{
     fmt,
 };
 
+use crate::components::second_floor::SecondFloorPlugin;
+
 use super::{
     animations::{DoorAnimation, door_animation_ready},
     first_floor::FirstFloorPlugin,
@@ -47,9 +49,11 @@ pub enum Rooms {
     Bedroom(bool),
     /// The house's dining room.
     DiningRoom(bool),
-    /// The house's hallway.
-    Hallway(bool),
-    /// The house's home office.
+    /// The house's first floor hallway.
+    Hallway1(bool),
+    /// The house's floor hallway.
+    Hallway2(bool),
+    /// The house's home office on the first floor.
     HomeOffice(bool),
     /// The house's kid's room.
     KidsRoom(bool),
@@ -57,7 +61,7 @@ pub enum Rooms {
     Kitchen(bool),
     /// The house's living room.
     LivingRoom(bool),
-    /// The house's office.
+    /// The house's office on the second floor.
     Office(bool),
     /// The house's shower.
     Shower(bool),
@@ -65,8 +69,10 @@ pub enum Rooms {
     Storage1(bool),
     /// The house's second floor storage.
     Storage2(bool),
-    /// The house's toilet.
-    Toilet(bool),
+    /// The house's first floor toilet.
+    Toilet1(bool),
+    /// The house's second floor toilet.
+    Toilet2(bool),
 }
 
 #[derive(Component, Debug, Clone, Copy, Default)]
@@ -98,7 +104,8 @@ impl fmt::Display for Rooms {
             Rooms::Bathroom(_) => "Bathroom",
             Rooms::Bedroom(_) => "Bedroom",
             Rooms::DiningRoom(_) => "Dining Room",
-            Rooms::Hallway(_) => "Hallway",
+            Rooms::Hallway1(_) => "Hallway 1",
+            Rooms::Hallway2(_) => "Hallway 2",
             Rooms::HomeOffice(_) => "Home Office",
             Rooms::KidsRoom(_) => "Kid's Room",
             Rooms::Kitchen(_) => "Kitchen",
@@ -107,7 +114,8 @@ impl fmt::Display for Rooms {
             Rooms::Shower(_) => "Shower",
             Rooms::Storage1(_) => "Storage 1",
             Rooms::Storage2(_) => "Storage 2",
-            Rooms::Toilet(_) => "Toilet",
+            Rooms::Toilet1(_) => "Toilet 1",
+            Rooms::Toilet2(_) => "Toilet 2",
         };
         write!(f, "{name}")
     }
@@ -150,7 +158,7 @@ impl Plugin for RoomsPlugin {
             .init_asset::<AnimationClip>()
             .init_asset::<WorldAsset>()
             .insert_state(Rooms::Office(true))
-            .add_plugins(FirstFloorPlugin);
+            .add_plugins((FirstFloorPlugin, SecondFloorPlugin));
     }
 }
 
@@ -609,7 +617,9 @@ mod tests {
         assert_eq!(format!("{}", Rooms::Basement(true)), "Basement");
         assert_eq!(format!("{}", Rooms::Bathroom(true)), "Bathroom");
         assert_eq!(format!("{}", Rooms::Bedroom(true)), "Bedroom");
-        assert_eq!(format!("{}", Rooms::Hallway(true)), "Hallway");
+        assert_eq!(format!("{}", Rooms::Hallway1(true)), "Hallway 1");
+        assert_eq!(format!("{}", Rooms::Hallway2(true)), "Hallway 2");
+
         assert_eq!(format!("{}", Rooms::HomeOffice(true)), "Home Office");
         assert_eq!(format!("{}", Rooms::KidsRoom(true)), "Kid's Room");
         assert_eq!(format!("{}", Rooms::Kitchen(true)), "Kitchen");
@@ -618,6 +628,7 @@ mod tests {
         assert_eq!(format!("{}", Rooms::Shower(true)), "Shower");
         assert_eq!(format!("{}", Rooms::Storage1(true)), "Storage 1");
         assert_eq!(format!("{}", Rooms::Storage2(true)), "Storage 2");
-        assert_eq!(format!("{}", Rooms::Toilet(true)), "Toilet");
+        assert_eq!(format!("{}", Rooms::Toilet1(true)), "Toilet 1");
+        assert_eq!(format!("{}", Rooms::Toilet2(true)), "Toilet 2");
     }
 }
