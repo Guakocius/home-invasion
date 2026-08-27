@@ -37,9 +37,6 @@ jobs:
       - name: Run Clippy
         run: cargo clippy -- -D warnings
 
-      - name: Install mold linker
-        run: sudo apt-get install -y mold
-
       - name: Run Tests
         env:
           CARGO_BUILD_JOBS: "2"
