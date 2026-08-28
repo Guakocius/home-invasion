@@ -477,7 +477,9 @@ pub fn spawn_room(
     };
 
     cmds.spawn((
-        Room { room_type },
+        Room {
+            room_type: room_type.clone(),
+        },
         Transform::from_translation(config.pos),
         Visibility::default(),
         Wall,
@@ -544,6 +546,10 @@ pub fn spawn_room(
         }
     });
 
+    let y: f32 = match room_type {
+        Rooms::Hallway1(_) | Rooms::Hallway2(_) => 0.0,
+        _ => 0.005,
+    };
     cmds.spawn((
         Mesh3d(meshes.add(Plane3d::new(
             Vec3::Y,
@@ -563,7 +569,7 @@ pub fn spawn_room(
                 ..default()
             }),
         ),
-        Transform::from_translation(config.pos),
+        Transform::from_translation(config.pos + y),
         Visibility::Visible,
     ))
     .with_children(|parent| {
