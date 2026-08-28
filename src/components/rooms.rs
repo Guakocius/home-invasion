@@ -258,6 +258,7 @@ pub struct PropSpec {
 ///   half_width: 16.0,
 ///   half_depth: 8.0,
 ///   step: 8.0,
+///   floor_asset: Some("textures/wooden_plank_floor.png".into()),
 ///   wall_asset: Some("models/Wall_office.glb".into()),
 ///   corner_asset: Some("models/Wall_corner_1_office.glb".into()),
 ///   door_asset: Some("models/Wall_office_door.glb".into()),
@@ -276,6 +277,8 @@ pub struct RoomConfig {
     pub half_depth: f32,
     /// The physical width of a single [`WallSegment`].
     pub step: f32,
+    /// The asset path of the `Floor`.
+    pub floor_asset: Option<String>,
     /// The asset path of the `Wall`.
     pub wall_asset: Option<String>,
     /// The asset path of the corners.
@@ -312,6 +315,7 @@ pub struct RoomConfig {
 ///   half_width: 16.0,
 ///   half_depth: 8.0,
 ///   step: 8.0,
+///   floor_asset: None,
 ///   wall_asset: Some("models/Wall_office.glb".into()),
 ///   corner_asset: Some("models/Wall_corner_1_office.glb".into()),
 ///   door_asset: Some("models/Wall_office_door.glb".into()),
@@ -422,6 +426,7 @@ pub fn generate_rooms(config: &RoomConfig) -> Vec<WallSegment> {
 ///     half_width: 16.0,
 ///     half_depth: 8.0,
 ///     step: 8.0,
+///     floor_asset: None,
 ///     wall_asset: Some("models/Wall_office.glb".into()),
 ///     corner_asset: Some("models/Wall_corner_1_office.glb".into()),
 ///     door_asset: Some("models/Wall_office_door.glb".into()),
@@ -465,6 +470,11 @@ pub fn spawn_room(
     room_type: Rooms,
 ) {
     let layout = generate_rooms(config);
+
+    let floor_texture: String = match config.floor_asset.clone() {
+        Some(f) => f,
+        None    => "textures/wooden_plank_floor.png".into()
+    };
 
     cmds.spawn((
         Room { room_type },
@@ -546,7 +556,7 @@ pub fn spawn_room(
                     asset_server
                         .load_builder()
                         .with_settings(configure_floor_texture_settings)
-                        .load("textures/wooden_plank_floor.png"),
+                        .load(floor_texture),
                 ),
                 uv_transform: Affine2::from_scale(vec2(10.0, 10.0)),
                 perceptual_roughness: 0.8,
