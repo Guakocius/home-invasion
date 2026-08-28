@@ -55,6 +55,7 @@ fn setup_basement(
         half_width: 64.0,
         half_depth: 16.0,
         step: 8.0,
+        floor_asset: None,
         wall_asset: Some("models/Wall_office.glb".into()),
         corner_asset: Some("models/Wall_corner_1_office.glb".into()),
         door_asset: Some("models/Wall_office_door.glb".into()),
