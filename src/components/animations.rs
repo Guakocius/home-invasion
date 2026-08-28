@@ -126,7 +126,7 @@ fn open_door(
         let cam_distance = player_transform
             .translation()
             .distance(door_transform.translation());
-        if cam_distance > 10.0 {
+        if cam_distance > 6.0 {
             continue;
         }
 
