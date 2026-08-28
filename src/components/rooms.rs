@@ -470,7 +470,7 @@ pub fn spawn_room(
     let layout = generate_rooms(config);
 
     let floor_texture: String = match config.floor_asset.clone() {
-        Some(f) => String::from(f),
+        Some(f) => f,
         None    => "textures/wooden_plank_floor.png".into()
     };
 
