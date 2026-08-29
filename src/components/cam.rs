@@ -30,9 +30,8 @@ pub struct CamPlugin;
 impl Plugin for CamPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            Update,
-            (setup_cam, setup_cam_light, grab_cursor, spawn_minimap)
-                .run_if(in_state(GameState::Playing)),
+            OnEnter(GameState::Playing),
+            (setup_cam, setup_cam_light, grab_cursor, spawn_minimap),
         );
     }
 }
