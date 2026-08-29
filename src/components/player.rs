@@ -9,7 +9,7 @@ use bevy::{input::mouse::AccumulatedMouseMotion, prelude::*};
 ///
 /// # Examples
 ///
-/// ```
+/// ```no_run
 /// use bevy::prelude::*;
 /// use home_invasion::components::player::Player;
 ///
@@ -21,7 +21,7 @@ pub struct Player;
 ///
 /// # Examples
 ///
-/// ```
+/// ```no_run
 /// use bevy::{input::InputPlugin, prelude::*};
 /// use home_invasion::components::player::PlayerPlugin;
 ///

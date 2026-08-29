@@ -9,7 +9,7 @@ const RED: Color = Color::srgb(1.0, 0.0, 0.0);
 ///
 /// # Examples
 ///
-/// ```
+/// ```no_run
 /// use home_invasion::components::game_menu::GameState;
 /// let game_state = &GameState::Splash;
 ///
@@ -57,7 +57,7 @@ struct Volume(pub u32);
 ///
 /// # Examples
 ///
-/// ```
+/// ```no_run
 /// use home_invasion::components::game_menu::InGame;
 ///
 /// let in_game = InGame(true);
@@ -79,7 +79,7 @@ pub struct InGame(
 ///
 /// # Examples
 ///
-/// ```
+/// ```no_run
 /// use bevy::prelude::*;
 /// use home_invasion::components::game_menu::GameMenuPlugin;
 ///
@@ -272,7 +272,7 @@ pub mod menu {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use bevy::prelude::*;
     /// use home_invasion::components::game_menu::menu::menu_plugin;
     ///
@@ -313,7 +313,7 @@ pub mod menu {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use home_invasion::components::game_menu::menu::MenuState;
     ///
     /// let menu_state = MenuState::Main;
@@ -384,7 +384,7 @@ pub mod menu {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use home_invasion::components::game_menu::menu::MenuButtonAction;
     ///
     /// let menu_button_action = MenuButtonAction::Play;

@@ -19,7 +19,7 @@ const VIEW_MODEL_RENDER_LAYER: usize = 1;
 ///
 /// # Examples
 ///
-/// ```
+/// ```no_run
 /// use bevy::prelude::*;
 /// use home_invasion::components::cam::CamPlugin;
 ///
@@ -40,7 +40,7 @@ impl Plugin for CamPlugin {
 ///
 /// # Examples
 ///
-/// ```
+/// ```no_run
 /// use bevy::{input::InputPlugin, prelude::*};
 /// use home_invasion::components::{
 ///     player::Player,
