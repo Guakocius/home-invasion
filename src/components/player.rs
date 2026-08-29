@@ -4,7 +4,6 @@ use std::f32::consts::FRAC_PI_2;
 
 use super::cam::CameraSensitivity;
 use bevy::{input::mouse::AccumulatedMouseMotion, prelude::*};
-use bevy_camera_controller::free_camera::FreeCamera;
 
 /// The Player [`Component`].
 ///

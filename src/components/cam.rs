@@ -2,7 +2,7 @@
 
 use std::f32::consts::FRAC_PI_2;
 
-use super::player::Player;
+use super::{game_menu::GameState, player::Player};
 use bevy::{
     camera::Viewport,
     camera::visibility::RenderLayers,
@@ -30,13 +30,9 @@ pub struct CamPlugin;
 impl Plugin for CamPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            Startup,
-            (
-                spawn_view_model,
-                setup_cam_light,
-                grab_cursor,
-                spawn_minimap,
-            ),
+            Update,
+            (setup_cam, setup_cam_light, grab_cursor, spawn_minimap)
+                .run_if(in_state(GameState::Playing)),
         );
     }
 }
@@ -90,7 +86,7 @@ fn grab_cursor(mut cursor_options: Query<&mut CursorOptions, With<PrimaryWindow>
     }
 }
 
-fn spawn_view_model(mut cmds: Commands) {
+fn setup_cam(mut cmds: Commands) {
     cmds.spawn((
         Player,
         CameraSensitivity::default(),
