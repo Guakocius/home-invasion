@@ -141,7 +141,7 @@ fn setup_living_room(
 
     let living_room_config = RoomConfig {
         name: "Living Room".into(),
-        half_width: 8.0,
+        half_width: 10.0,
         half_depth: 36.0,
         step: 8.0,
         floor_asset: Some("textures/livingroom_floor_texture.png".into()),
@@ -150,7 +150,7 @@ fn setup_living_room(
         door_asset: Some("models/Wall_office_door.glb".into()),
         door_indices: vec![5],
         props: Some(props),
-        pos: Vec3::new(38.0, 0.0, 6.0),
+        pos: Vec3::new(40.0, 0.0, 6.0),
     };
     spawn_room(
         &mut cmds,
