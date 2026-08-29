@@ -370,8 +370,7 @@ pub mod menu {
 
     type ButtonFilter = (Changed<Interaction>, With<Button>);
 
-    type SettingsData<'a, T: Resource + Component<Mutability = Mutable> + PartialEq + Copy> =
-        (&'a Interaction, &'a Setting<T>, Entity);
+    type SettingsData<'a, T> = (&'a Interaction, &'a Setting<T>, Entity);
 
     const NORMAL_BUTTON: Color = Color::srgb(0.5, 0.5, 0.5);
     const HOVERED_BUTTON: Color = Color::srgb(0.75, 0.75, 0.75);
