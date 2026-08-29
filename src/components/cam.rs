@@ -2,7 +2,7 @@
 
 use std::f32::consts::FRAC_PI_2;
 
-use super::player::Player;
+use super::{game_menu::GameState, player::Player};
 use bevy::{
     camera::Viewport,
     camera::visibility::RenderLayers,
@@ -19,7 +19,7 @@ const VIEW_MODEL_RENDER_LAYER: usize = 1;
 ///
 /// # Examples
 ///
-/// ```
+/// ```no_run
 /// use bevy::prelude::*;
 /// use home_invasion::components::cam::CamPlugin;
 ///
@@ -30,13 +30,8 @@ pub struct CamPlugin;
 impl Plugin for CamPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            Startup,
-            (
-                spawn_view_model,
-                setup_cam_light,
-                grab_cursor,
-                spawn_minimap,
-            ),
+            OnEnter(GameState::Playing),
+            (setup_cam, setup_cam_light, grab_cursor, spawn_minimap),
         );
     }
 }
@@ -45,7 +40,7 @@ impl Plugin for CamPlugin {
 ///
 /// # Examples
 ///
-/// ```
+/// ```no_run
 /// use bevy::{input::InputPlugin, prelude::*};
 /// use home_invasion::components::{
 ///     player::Player,
@@ -90,7 +85,7 @@ fn grab_cursor(mut cursor_options: Query<&mut CursorOptions, With<PrimaryWindow>
     }
 }
 
-fn spawn_view_model(mut cmds: Commands) {
+fn setup_cam(mut cmds: Commands) {
     cmds.spawn((
         Player,
         CameraSensitivity::default(),

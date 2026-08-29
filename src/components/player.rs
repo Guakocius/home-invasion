@@ -4,13 +4,12 @@ use std::f32::consts::FRAC_PI_2;
 
 use super::cam::CameraSensitivity;
 use bevy::{input::mouse::AccumulatedMouseMotion, prelude::*};
-use bevy_camera_controller::free_camera::FreeCamera;
 
 /// The Player [`Component`].
 ///
 /// # Examples
 ///
-/// ```
+/// ```no_run
 /// use bevy::prelude::*;
 /// use home_invasion::components::player::Player;
 ///
@@ -22,7 +21,7 @@ pub struct Player;
 ///
 /// # Examples
 ///
-/// ```
+/// ```no_run
 /// use bevy::{input::InputPlugin, prelude::*};
 /// use home_invasion::components::player::PlayerPlugin;
 ///

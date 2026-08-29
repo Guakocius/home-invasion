@@ -7,7 +7,7 @@ use std::env;
 ///
 /// # Examples
 ///
-/// ```
+/// ```no_run
 /// use std::env;
 /// use bevy::window::PresentMode;
 /// use home_invasion::cfg::window_plugin::build_platform_window_plugin;

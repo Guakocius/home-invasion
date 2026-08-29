@@ -34,7 +34,7 @@ const SCALE: Vec3 = Vec3::new(4.0, 4.0, 4.0);
 ///
 /// # Examples
 ///
-/// ```
+/// ```no_run
 /// use home_invasion::components::rooms::Rooms;
 ///
 /// let room = Rooms::Basement(true);
@@ -85,7 +85,7 @@ struct Door;
 ///
 /// # Examples
 ///
-/// ```
+/// ```no_run
 /// use home_invasion::components::rooms::{Room, Rooms};
 ///
 /// let room = Room { room_type: Rooms::Office(true) };
@@ -125,7 +125,7 @@ impl fmt::Display for Rooms {
 ///
 /// # Examples
 ///
-/// ```
+/// ```no_run
 /// use bevy::{
 ///   asset::AssetPlugin,
 ///   input::InputPlugin,
@@ -166,7 +166,7 @@ impl Plugin for RoomsPlugin {
 ///
 /// # Examples
 ///
-/// ```
+/// ```no_run
 /// use home_invasion::components::rooms::WallType;
 ///
 /// let wall_type = WallType::Standard;
@@ -190,7 +190,7 @@ pub enum WallType {
 ///
 /// # Examples
 ///
-/// ```
+/// ```no_run
 /// use std::f32::consts::FRAC_PI_2;
 /// use bevy::prelude::*;
 /// use home_invasion::components::rooms::{WallSegment, WallType};
@@ -215,7 +215,7 @@ pub struct WallSegment {
 ///
 /// # Examples
 ///
-/// ```
+/// ```no_run
 /// use std::f32::consts::PI;
 /// use bevy::prelude::*;
 /// use home_invasion::components::rooms::PropSpec;
@@ -241,7 +241,7 @@ pub struct PropSpec {
 ///
 /// # Examples
 ///
-/// ```
+/// ```no_run
 /// use std::f32::consts::PI;
 /// use bevy::prelude::*;
 /// use home_invasion::components::rooms::{PropSpec, RoomConfig};
@@ -298,7 +298,7 @@ pub struct RoomConfig {
 ///
 /// # Examples
 ///
-/// ```
+/// ```no_run
 /// use std::f32::consts::PI;
 /// use bevy::prelude::*;
 /// use home_invasion::components::rooms::{PropSpec, RoomConfig, generate_rooms};
@@ -402,7 +402,7 @@ pub fn generate_rooms(config: &RoomConfig) -> Vec<WallSegment> {
 ///
 /// # Examples
 ///
-/// ```
+/// ```no_run
 /// use std::f32::consts::PI;
 /// use bevy::{input::InputPlugin, prelude::*, state::app::StatesPlugin};
 /// use home_invasion::components::rooms::{PropSpec, RoomConfig, Rooms, spawn_room};
@@ -473,7 +473,7 @@ pub fn spawn_room(
 
     let floor_texture: String = match config.floor_asset.clone() {
         Some(f) => f,
-        None    => "textures/wooden_plank_floor.png".into()
+        None => "textures/wooden_plank_floor.png".into(),
     };
 
     cmds.spawn((

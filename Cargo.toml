@@ -40,9 +40,6 @@ bevy = { version = "0.19.0", default-features = false, features = [
   "wayland",
 ] }
 
-bevy_camera_controller = { version = "0.19.0", default-features = false, features = [
-  "free_camera",
-] }
 bevy_rapier3d = { version = "0.36.0", default-features = false, features = [
   "dim3",
 ] }

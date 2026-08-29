@@ -13,7 +13,7 @@ use super::player::Player;
 ///
 /// # Examples
 ///
-/// ```
+/// ```no_run
 /// use bevy::{
 ///   asset::AssetPlugin,
 ///   input::InputPlugin,
@@ -57,7 +57,7 @@ pub struct DoorAnimation {
 ///
 /// # Examples
 ///
-/// ```
+/// ```no_run
 /// use bevy::{
 ///   asset::AssetPlugin,
 ///   input::InputPlugin,

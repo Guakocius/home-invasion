@@ -12,7 +12,6 @@
 //!   prelude::*,
 //!   state::app::StatesPlugin,
 //! };
-//! use bevy_camera_controller::free_camera::FreeCameraPlugin;
 //! use home_invasion::components::{cam::CamPlugin, house::HousePlugin};
 //!
 //! fn main() {
@@ -22,7 +21,6 @@
 //!                 InputPlugin,
 //!                 AssetPlugin::default(),
 //!                 StatesPlugin,
-//!                 FreeCameraPlugin,
 //!                 CamPlugin,
 //!                 HousePlugin,
 //!         ));

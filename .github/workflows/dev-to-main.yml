@@ -2,7 +2,7 @@ name: CI and Auto-Merge to Main
 
 on:
   push:
-    branches: [ "dev" ]
+    branches: ["dev"]
 
 concurrency:
   group: ci-${{ github.ref }}-${{ github.sha }}
@@ -24,12 +24,12 @@ jobs:
         with:
           components: clippy
 
-      - name: Install Linux Dependencies
+      - name: Install Dependencies
         env:
-          DEBIAN_FRONTEND:  noninteractive
+          DEBIAN_FRONTEND: noninteractive
         run: |
           sudo apt-get update
-          sudo apt-get install -y pkg-config libwayland-dev libxkbcommon-dev libasound2-dev libudev-dev
+          sudo apt-get install -y pkg-config libwayland-dev libxkbcommon-dev libxkbcommon-x11-dev libasound2-dev libudev-dev xvfb
 
       - name: Cache Cargo dependencies
         uses: Swatinem/rust-cache@v2
@@ -46,7 +46,7 @@ jobs:
           RUSTFLAGS: "-C link-arg=-fuse-ld=mold"
         timeout-minutes: 30
         run: |
-          cargo test
+          xvfb-run --auto-servernum cargo test
 
   create-and-merge-pr:
     needs: test-and-clippy
@@ -63,10 +63,10 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-            gh pr create \
-            --base main \
-            --head dev \
-            --title "ci: merge dev into main" \
-            --body "Automated PR created by GitHub Actions after passing checks." || true
+          gh pr create \
+          --base main \
+          --head dev \
+          --title "ci: merge dev into main" \
+          --body "Automated PR created by GitHub Actions after passing checks." || true
 
-            gh pr merge dev --auto --merge
+          gh pr merge dev --auto --merge
