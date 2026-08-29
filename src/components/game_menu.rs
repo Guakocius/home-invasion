@@ -372,6 +372,9 @@ pub mod menu {
 
     type SettingsData<'a, T> = (&'a Interaction, &'a Setting<T>, Entity);
 
+    type InteractionData<'a> = (&'a Interaction, &'a MenuButtonAction);
+    type InteractionFilter<'a> = (Changed<Interaction>, With<Button>);
+
     const NORMAL_BUTTON: Color = Color::srgb(0.5, 0.5, 0.5);
     const HOVERED_BUTTON: Color = Color::srgb(0.75, 0.75, 0.75);
     const HOVERED_PRESSED_BUTTON: Color = Color::srgb(0.5, 0.65, 0.5);
@@ -868,10 +871,7 @@ pub mod menu {
     }
 
     fn menu_action(
-        interaction_query: Query<
-            (&Interaction, &MenuButtonAction),
-            (Changed<Interaction>, With<Button>),
-        >,
+        interaction_query: Query<InteractionData, InteractionFilter>,
         mut app_exit_writer: MessageWriter<AppExit>,
         mut menu_state: ResMut<NextState<MenuState>>,
         mut game_state: ResMut<NextState<GameState>>,
@@ -882,19 +882,17 @@ pub mod menu {
                     MenuButtonAction::Quit => {
                         app_exit_writer.write(AppExit::Success);
                     }
-                    MenuButtonAction::Play => {
+                    MenuButtonAction::Play | MenuButtonAction::Continue => {
                         game_state.set(GameState::Game);
                         menu_state.set(MenuState::Disabled);
                     }
-                    MenuButtonAction::Continue => {
-                        game_state.set(GameState::Game);
-                        menu_state.set(MenuState::Disabled);
+                    MenuButtonAction::Settings | MenuButtonAction::BackToSettings => {
+                        menu_state.set(MenuState::Settings);
                     }
-                    MenuButtonAction::Settings => menu_state.set(MenuState::Settings),
+
                     MenuButtonAction::SettingsDisplay => menu_state.set(MenuState::SettingsDisplay),
                     MenuButtonAction::SettingsSound => menu_state.set(MenuState::SettingsSound),
                     MenuButtonAction::BackToMainMenu => menu_state.set(MenuState::Main),
-                    MenuButtonAction::BackToSettings => menu_state.set(MenuState::Settings),
                 }
             }
         }
