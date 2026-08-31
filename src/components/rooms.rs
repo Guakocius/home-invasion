@@ -79,7 +79,9 @@ pub enum Rooms {
 struct Wall;
 
 #[derive(Component, Debug, Clone, Copy, Default)]
-struct Door;
+struct Door {
+    pub open: bool,
+}
 
 /// This structure defines each `Room` and its contents.
 ///
@@ -504,7 +506,7 @@ pub fn spawn_room(
                     ));
 
                     if is_door {
-                        entity.insert(Door);
+                        entity.insert(Door {open: false});
 
                         let mut graph = AnimationGraph::new();
                         let mut indices = HashMap::new();

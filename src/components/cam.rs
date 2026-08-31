@@ -102,12 +102,12 @@ fn setup_cam(mut cmds: Commands) {
     ));
 }
 
-fn setup_cam_light(mut cmds: Commands) {
-    cmds.spawn((
-        DirectionalLight::default(),
-        Transform::from_xyz(10.0, 10.0, 10.0).looking_at(Vec3::ONE, Vec3::Y),
-        RenderLayers::from_layers(&[DEFAULT_RENDER_LAYER, VIEW_MODEL_RENDER_LAYER]),
-    ));
+fn setup_cam_light(mut _cmds: Commands) {
+    // cmds.spawn((
+    //     DirectionalLight::default(),
+    //     Transform::from_xyz(10.0, 10.0, 10.0).looking_at(Vec3::ONE, Vec3::Y),
+    //     RenderLayers::from_layers(&[DEFAULT_RENDER_LAYER, VIEW_MODEL_RENDER_LAYER]),
+    // ));
 }
 
 fn spawn_minimap(mut cmds: Commands) {

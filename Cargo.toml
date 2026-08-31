@@ -26,6 +26,7 @@ bevy = { version = "0.19.0", default-features = false, features = [
 
   "bevy_gltf",
   "bevy_animation",
+  "mp3",
 
   "bevy_ui",
   "bevy_ui_render",
@@ -39,6 +40,8 @@ bevy = { version = "0.19.0", default-features = false, features = [
   "zstd_rust",
   "wayland",
 ] }
+
+bevy_audio = "0.19.1"
 
 bevy_rapier3d = { version = "0.36.0", default-features = false, features = [
   "dim3",
