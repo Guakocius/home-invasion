@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use home_invasion::{
     cfg::window_plugin::build_platform_window_plugin,
     components::{
-        cam::CamPlugin, game_menu::GameMenuPlugin, house::HousePlugin, items::ItemPlugin,
+        cam::CamPlugin, game_menu::GameMenuPlugin, house::HousePlugin, items::ItemsPlugin,
         player::PlayerPlugin, sound::SoundPlugin,
     },
 };
@@ -18,7 +18,7 @@ pub fn build_app() -> App {
             })
             .set(build_platform_window_plugin()),
         GameMenuPlugin,
-        ItemPlugin,
+        ItemsPlugin,
         CamPlugin,
         HousePlugin,
         PlayerPlugin,

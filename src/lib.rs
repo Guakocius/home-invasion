@@ -60,7 +60,21 @@ pub mod utils {
 
 use cfg::window_plugin::*;
 use components::{
-    animations::*, basement::*, cam::*, first_floor::*, game_menu::*, house::*, items::*, player::*,
-    rooms::*, second_floor::*, sound::*,
+    animations::{
+        DoorAnimation, FlashLightAnimation, door_animation_ready, flashlight_animation_ready,
+    },
+    basement::BasementPlugin,
+    cam::*,
+    first_floor::FirstFloorPlugin,
+    game_menu::*,
+    house::*,
+    items::{
+        flashlight::{FlashLightOn, FlashLightPlugin, PlayerFlashLight},
+        *,
+    },
+    player::*,
+    rooms::*,
+    second_floor::SecondFloorPlugin,
+    sound::{SoundEffect, SoundPlugin},
 };
 use utils::macros::*;

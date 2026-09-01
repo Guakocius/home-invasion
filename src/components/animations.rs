@@ -7,9 +7,7 @@ use bevy::{
     world_serialization::WorldInstanceReady,
 };
 
-use crate::components::items::flashlight::{FlashLightOn, PlayerFlashLight};
-
-use super::player::Player;
+use crate::{FlashLightOn, Player, PlayerFlashLight};
 
 /// [Plugin] containing all animations.
 ///
@@ -168,7 +166,9 @@ fn play_door_animation(
 /// Structure containing the flashlight animation handler and the mapped door nodes for the [Handle].
 #[derive(Component, Clone)]
 pub struct FlashLightAnimation {
+    /// The [Animation Handle](Handle).
     pub handle: Handle<AnimationGraph>,
+    /// The node indices of the Animation collected in a [`HashMap`].
     pub node_indices: HashMap<String, AnimationNodeIndex>,
 }
 
@@ -193,7 +193,7 @@ pub fn flashlight_animation_ready(
     }
 }
 
-/// Searches for needed FlashLightAnimation.
+/// Searches for needed [`FlashLightAnimation`].
 pub fn flashlight_player(
     flashlight_query: Single<(&mut AnimationPlayer, &FlashLightAnimation), With<PlayerFlashLight>>,
     flashlight_on: Res<FlashLightOn>,
@@ -212,7 +212,11 @@ pub fn flashlight_player(
     play_flashlight_animation(flashlight_idx2, &mut player, flashlight_on.0);
 }
 
-fn play_flashlight_animation(flashlight_idx: AnimationNodeIndex, player: &mut AnimationPlayer, on: bool) {
+fn play_flashlight_animation(
+    flashlight_idx: AnimationNodeIndex,
+    player: &mut AnimationPlayer,
+    on: bool,
+) {
     if let Some(action) = player.animation(flashlight_idx)
         && (action.is_finished() || action.is_paused())
     {
