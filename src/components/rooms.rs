@@ -18,11 +18,8 @@ use std::{
     fmt,
 };
 
-use super::{
-    animations::{DoorAnimation, door_animation_ready},
-    basement::BasementPlugin,
-    first_floor::FirstFloorPlugin,
-    second_floor::SecondFloorPlugin,
+use crate::{
+    BasementPlugin, DoorAnimation, FirstFloorPlugin, SecondFloorPlugin, door_animation_ready,
 };
 
 const ERROR_MARGIN: f32 = 0.1;
@@ -79,7 +76,9 @@ pub enum Rooms {
 struct Wall;
 
 #[derive(Component, Debug, Clone, Copy, Default)]
-struct Door;
+struct Door {
+    pub _open: bool,
+}
 
 /// This structure defines each `Room` and its contents.
 ///
@@ -504,7 +503,7 @@ pub fn spawn_room(
                     ));
 
                     if is_door {
-                        entity.insert(Door);
+                        entity.insert(Door { _open: false });
 
                         let mut graph = AnimationGraph::new();
                         let mut indices = HashMap::new();
