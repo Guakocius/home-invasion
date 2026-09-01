@@ -72,7 +72,7 @@ use components::{
         flashlight::{FlashLightOn, FlashLightPlugin, PlayerFlashLight},
         *,
     },
-    player::*,
+    player::{Player, PlayerPlugin},
     rooms::*,
     second_floor::SecondFloorPlugin,
     sound::{SoundEffect, SoundPlugin},
