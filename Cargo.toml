@@ -1,5 +1,5 @@
 [package]
-name = "home_invasion"
+name = "home-invasion"
 version = "0.2.0"
 edition = "2024"
 
@@ -46,7 +46,6 @@ bevy_audio = "0.19.1"
 bevy_rapier3d = { version = "0.36.0", default-features = false, features = [
   "dim3",
 ] }
-rapier3d = "0.34.0"
 
 [dependencies.bevy_gltf]
 version = "0.19.0"
